@@ -5,7 +5,13 @@ MicroPython, for autofocus with NINA. It drives a TMC2209 stepper driver over Wi
 It passes ASCOM ConformU 4.1 against the desktop simulator (`sim.py`); the run on real
 hardware is pending a separate motor supply (see Wiring).
 
-## Wiring
+## Hardware
+
+There's a carrier PCB in [`hardware/`](hardware/README.md): 80 × 50 mm, assembled by JLCPCB,
+with sockets for the Pico 2 W and the TMC2209, a 12 V barrel jack, a motor connector and a
+3.5 mm jack for a DS18B20 temperature sensor. The table below is for breadboard builds.
+
+## Wiring (breadboard)
 
 | TMC2209 (BigTreeTech v1.3) | Connect to |
 |---|---|

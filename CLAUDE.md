@@ -25,6 +25,15 @@ $C conformance   http://localhost:5555/api/v1/focuser/0
 
 `mpremote` lives in the git-ignored `.venv` (system Python is PEP 668 managed): `python3 -m venv .venv && .venv/bin/pip install mpremote`.
 
+## PCB (`hardware/`)
+
+The carrier board is generated, not drawn: `hardware/design.py` (all parts + nets) is the single source.
+- `gen_schematic.py` (system Python) and `gen_board.py`, `route.py`, `gen_fab.py`, `board_report.py` (KiCad's Python, `~/.local/opt/kicad-10.0.7/squashfs-root/bin/python3.11`, which has `pcbnew`).
+- `hardware/setup_tools.sh` once, then `hardware/build.sh`; `python3 -m pytest tests/hardware -q` checks ERC, schematic/board parity, DRC, placement rules and the JLC files. The KiCad tests skip if KiCad isn't installed.
+- FreeRouting is pinned to 2.1.0 (newest that runs on this machine's Java 21) and runs with analytics off (`-da`).
+- Layout rules live in `gen_board.py` (`PLACEMENT`, `SILK`, `SLOT_KEEPOUT`); the J1 footprint is custom (`hardware/kicad/Focuser.pretty`, from the XUNPU DC-005 drawing).
+- After a hand edit in KiCad, port it back into the scripts or the next build overwrites it.
+
 ## Architecture
 
 - `pico/main.py` runs at power-up: loads settings, joins Wi-Fi (blinks the LED, retries every 10 s, watchdog reconnects), builds the `Stepper` with real `machine.Pin`/`machine.Timer`, then `asyncio.run`s the Microdot server and the discovery responder together.
