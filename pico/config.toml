@@ -1,0 +1,20 @@
+# Pico Alpaca focuser settings. Wi-Fi credentials go in secret.toml.
+
+[network]
+port = 5555
+hostname = "pico-focuser"
+
+[device]
+name = "Pico Focuser"
+location = "Observatory"
+max_step = 100000          # 1/8 microstep: 1600 steps per motor turn
+start_position = 50000     # Position reported at every power-up
+max_increment = 100000
+steps_per_sec = 800
+reverse = false            # Flip if "out" moves the wrong way
+hold_when_idle = true      # Keep the driver enabled between moves while connected
+
+[pins]
+step = 16
+dir = 20
+en = 21                    # Active low
