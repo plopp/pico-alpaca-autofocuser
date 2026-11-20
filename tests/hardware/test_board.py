@@ -1,20 +1,4 @@
-import json
-import subprocess
-import sys
-
-import pytest
-
 import design
-
-PICO_Y_SPAN = None   # filled from the board: y-range of the Pico sockets' outline
-
-
-@pytest.fixture(scope='module')
-def board(kicad):
-    subprocess.run([sys.executable, str(kicad.HARDWARE / 'gen_schematic.py')], check=True)
-    kicad.kipython(kicad.HARDWARE / 'gen_board.py')
-    out = kicad.kipython(kicad.HARDWARE / 'board_report.py', kicad.PCB)
-    return json.loads(out.stdout)
 
 
 def fp(board, ref):
@@ -109,3 +93,10 @@ def test_slot_edges_clear(board):
         cx0, cy0, cx1, cy1 = data['courtyard']
         assert cy0 >= y0 + SLOT_KEEPOUT - 0.01, ref
         assert cy1 <= y1 - SLOT_KEEPOUT + 0.01, ref
+
+
+def test_no_part_numbers_on_silkscreen(board):
+    import re
+    for t in board['texts']:
+        assert not re.fullmatch(r'C\d{4,}', t['text']), t      # LCSC numbers, not designators
+        assert 'CONFIRM' not in t['text'], t

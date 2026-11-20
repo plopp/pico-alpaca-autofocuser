@@ -39,6 +39,7 @@ def write_project():
     rules = {'min_clearance': 0.127, 'min_track_width': 0.127, 'min_via_diameter': 0.5,
              'min_through_hole_diameter': 0.3, 'min_hole_to_hole': 0.25,
              'min_copper_edge_clearance': 0.3, 'min_via_annular_width': 0.13,
+             'min_resolved_spokes': 1,
              'min_text_height': 0.8, 'min_text_thickness': 0.12, 'min_silk_clearance': 0.0,
              'allow_blind_buried_vias': False, 'allow_microvias': False}
 

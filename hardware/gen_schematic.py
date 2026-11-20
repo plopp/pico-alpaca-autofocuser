@@ -49,6 +49,21 @@ def load_symbol(lib_id):
     return body, pins
 
 
+def pin_names(lib_id):
+    """{pin_number: pin_name} for a library symbol."""
+    lib, name = lib_id.split(':')
+    text = (kicad_env.SYMBOLS / (lib + '.kicad_symdir') / (name + '.kicad_sym')).read_text()
+    return {m.group(2): m.group(1) for m in re.finditer(
+        r'\(pin \w+ \w+.*?\(name "([^"]*)".*?\(number "([^"]+)"', text, re.S)}
+
+
+def unconnected_net_name(ref, number, name):
+    """The net name eeschema gives a no-connect pin (the board must use the same)."""
+    if name and name != '~':
+        return 'unconnected-({}-{}-Pad{})'.format(ref, name, number)
+    return 'unconnected-({}-Pad{})'.format(ref, number)
+
+
 def prop(name, value, x, y, hide=False):
     return ('(property "{}" "{}" (at {} {} 0) (effects (font (size 1.27 1.27)){}))'
             .format(name, value, x, y, ' (hide yes)' if hide else ''))
@@ -58,7 +73,7 @@ def symbol_instance(ref, lib_id, value, footprint, lcsc, x, y, pins, root, in_bo
     fields = [prop('Reference', ref, x, snap(y - 6)),
               prop('Value', value, x, snap(y + 6)),
               prop('Footprint', footprint, x, y, hide=True),
-              prop('Datasheet', '~', x, y, hide=True),
+              prop('Datasheet', '', x, y, hide=True),
               prop('Description', '', x, y, hide=True)]
     if lcsc:
         fields.append(prop('LCSC', lcsc, x, y, hide=True))
@@ -72,8 +87,10 @@ def symbol_instance(ref, lib_id, value, footprint, lcsc, x, y, pins, root, in_bo
 
 
 def label(net, x, y, key):
-    return ('(label "{}" (at {} {} 0) (effects (font (size 1.27 1.27)) (justify left bottom)) '
-            '(uuid "{}"))'.format(net, x, y, uid('label', key)))
+    # Global labels give plain net names (GND, +12V) that match the board's nets
+    return ('(global_label "{}" (shape passive) (at {} {} 0) '
+            '(effects (font (size 1.27 1.27)) (justify left)) (uuid "{}"))'
+            .format(net, x, y, uid('label', key)))
 
 
 def no_connect(x, y, key):
@@ -85,13 +102,13 @@ def build():
     net_of = {member: net for net, members in design.NETS.items() for member in members}
     lib_bodies, items = {}, []
 
-    placed = [(p.ref, p.symbol, p.value, p.footprint, p.lcsc if p.assembled else None)
-              for p in design.PARTS.values()]
-    placed += [('#FLG0{}'.format(i + 1), 'power:PWR_FLAG', 'PWR_FLAG', '', None)
+    placed = [(p.ref, p.symbol, p.value, p.footprint, p.lcsc if p.assembled else None,
+               p.assembled) for p in design.PARTS.values()]
+    placed += [('#FLG0{}'.format(i + 1), 'power:PWR_FLAG', 'PWR_FLAG', '', None, False)
                for i in range(len(PWR_FLAG_NETS))]
 
     x, y, row_h = 25.4, 30.48, 0.0
-    for ref, lib_id, value, footprint, lcsc in placed:
+    for ref, lib_id, value, footprint, lcsc, in_bom in placed:
         if lib_id not in lib_bodies:
             lib_bodies[lib_id] = load_symbol(lib_id)
         body, pins = lib_bodies[lib_id]
@@ -103,7 +120,7 @@ def build():
             x, y, row_h = 25.4, snap(y + row_h + 10), 0.0
         sx, sy = snap(x - min(xs) + 10), snap(y + max(ys) + 8)
         items.append(symbol_instance(ref, lib_id, value, footprint, lcsc, sx, sy, pins, root,
-                                     in_bom=not ref.startswith('#')))
+                                     in_bom=in_bom))
         for number, (px, py) in pins.items():
             cx, cy = round(sx + px, 2), round(sy - py, 2)
             if ref.startswith('#FLG'):

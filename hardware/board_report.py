@@ -36,6 +36,10 @@ def report(path):
             texts.append({'text': item.GetText(), 'x': mm(pos.x), 'y': mm(pos.y)})
     footprints = {}
     for fp in board.GetFootprints():
+        for field in fp.GetFields():                 # visible footprint fields on silkscreen
+            if field.IsVisible() and field.GetLayer() == pcbnew.F_SilkS:
+                pos = field.GetPosition()
+                texts.append({'text': field.GetText(), 'x': mm(pos.x), 'y': mm(pos.y)})
         court = fp.GetCourtyard(pcbnew.F_CrtYd)
         box = court.BBox() if court.OutlineCount() else fp.GetBoundingBox(False)
         footprints[fp.GetReference()] = {
