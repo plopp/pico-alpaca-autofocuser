@@ -43,8 +43,7 @@ _PARTS = [
          'TMC2209 logic', 'C54973824', True),
     Part('J7', 'Connector:Conn_01x08_Socket', 'Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical',
          'TMC2209 power', 'C54973824', True),
-] + [Part('H{}'.format(n), 'Mechanical:MountingHole', 'MountingHole:MountingHole_3.2mm_M3',
-          'M3', None, False) for n in range(1, 5)]
+]   # no mounting holes: the board slides into slots in the case
 
 PARTS = {p.ref: p for p in _PARTS}
 

@@ -4,7 +4,6 @@ Every part is placed on a grid and each connected pin gets a net label, so the s
 is a readable, ERC-checkable record of design.NETS (labels instead of wires).
 Run with system Python: python3 hardware/gen_schematic.py
 """
-import json
 import re
 import uuid
 
@@ -127,9 +126,7 @@ def build():
                    items=' '.join(items)))
     kicad_env.KICAD_DIR.mkdir(parents=True, exist_ok=True)
     kicad_env.SCH.write_text(sch + '\n')
-    project = kicad_env.KICAD_DIR / (kicad_env.PROJECT + '.kicad_pro')
-    if not project.exists():
-        project.write_text(json.dumps({'meta': {'filename': project.name, 'version': 3}}, indent=2))
+    kicad_env.write_project()
     return kicad_env.SCH
 
 
