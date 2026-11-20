@@ -18,10 +18,6 @@ def kicad():
 
 @pytest.fixture(scope='session')
 def board(kicad):
-    """Build the whole board once (schematic -> placement -> routing) and return its JSON report."""
+    """JSON report of the COMMITTED board. Tests never regenerate it: run hardware/build.sh first."""
     import json
-    import subprocess
-    subprocess.run([sys.executable, str(kicad.HARDWARE / 'gen_schematic.py')], check=True)
-    kicad.kipython(kicad.HARDWARE / 'gen_board.py')
-    kicad.kipython(kicad.HARDWARE / 'route.py')
     return json.loads(kicad.kipython(kicad.HARDWARE / 'board_report.py', kicad.PCB).stdout)

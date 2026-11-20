@@ -97,7 +97,8 @@ def no_connect(x, y, key):
     return '(no_connect (at {} {}) (uuid "{}"))'.format(x, y, uid('nc', key))
 
 
-def build():
+def build(path=None, write_project=True):
+    path = path or kicad_env.SCH
     root = uid('root')
     net_of = {member: net for net, members in design.NETS.items() for member in members}
     lib_bodies, items = {}, []
@@ -142,9 +143,10 @@ def build():
            .format(root=root, libs=' '.join(b for b, _ in lib_bodies.values()),
                    items=' '.join(items)))
     kicad_env.KICAD_DIR.mkdir(parents=True, exist_ok=True)
-    kicad_env.SCH.write_text(sch + '\n')
-    kicad_env.write_project()
-    return kicad_env.SCH
+    path.write_text(sch + '\n')
+    if write_project:
+        kicad_env.write_project()
+    return path
 
 
 if __name__ == '__main__':

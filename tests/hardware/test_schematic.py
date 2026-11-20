@@ -1,17 +1,20 @@
 import json
 import re
-import subprocess
-import sys
-
 import pytest
 
 import design
 
 
 @pytest.fixture(scope='module')
-def schematic(kicad, tmp_path_factory):
-    subprocess.run([sys.executable, str(kicad.HARDWARE / 'gen_schematic.py')], check=True)
-    return kicad.SCH
+def schematic(kicad):
+    return kicad.SCH          # the committed schematic (hardware/build.sh regenerates it)
+
+
+def test_schematic_is_up_to_date(kicad, tmp_path):
+    import gen_schematic
+    fresh = tmp_path / 'focuser.kicad_sch'
+    gen_schematic.build(fresh, write_project=False)
+    assert fresh.read_text() == kicad.SCH.read_text(), 'run hardware/build.sh'
 
 
 def test_erc_clean(kicad, schematic, tmp_path):

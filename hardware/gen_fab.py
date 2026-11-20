@@ -77,17 +77,17 @@ def docs(out):
         '--height', '1000', '-o', out / 'render-iso.png', kicad_env.PCB)
 
 
-def build():
-    out = kicad_env.FAB_DIR
+def build(out=None, renders=True):
+    out = Path(out) if out else kicad_env.FAB_DIR
     out.mkdir(parents=True, exist_ok=True)
-    for old in out.glob('preview-*.png'):          # superseded by render-*.png
-        old.unlink()
     gerbers(out)
     bom(out)
     cpl(out)
-    docs(out)
+    if renders:
+        docs(out)
     return out
 
 
 if __name__ == '__main__':
-    print(build())
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    print(build(args[0] if args else None, renders='--no-renders' not in sys.argv))
