@@ -21,6 +21,7 @@ class Stepper:
         self._target = start_position
         self._running = False
         self._enabled = False
+        self._release = False       # switch the driver off when the current move ends
         self._en.value(1)           # Active low: start with the driver off
 
     @property
@@ -48,9 +49,28 @@ class Stepper:
         self._en.value(1)
         self._enabled = False
 
-    def move_to(self, target):
+    def set_position(self, position):
+        """Redefine where the focuser is, without moving."""
+        if self._running:
+            raise ValueError('cannot set the position while moving')
+        if position < 0 or position > self._max_step:
+            raise ValueError('position out of range')
+        self._position = position
+        self._target = position
+
+    def configure(self, steps_per_sec, reverse, hold_when_idle):
+        if self._running:
+            raise ValueError('cannot change settings while moving')
+        self._freq = steps_per_sec
+        self._reverse = reverse
+        self._hold = hold_when_idle
+
+    def move_to(self, target, release=False):
+        """Move to target. release=True switches the driver off again when the move ends
+        (used for manual moves while no client holds the focuser)."""
         if target < 0 or target > self._max_step:
             raise ValueError('target out of range')
+        self._release = release
         self._target = target
         if not self._running and target != self._position:
             if not self._enabled:       # hold_when_idle=False switched it off
@@ -63,15 +83,21 @@ class Stepper:
         self._timer.deinit()
         self._running = False
         self._target = self._position
+        if self._release:
+            self._switch_off()
+
+    def _switch_off(self):
+        self._en.value(1)
+        self._enabled = False
+        self._release = False
 
     def _tick(self, t=None):
         delta = self._target - self._position
         if delta == 0:
             self._timer.deinit()
             self._running = False
-            if not self._hold:
-                self._en.value(1)
-                self._enabled = False
+            if self._release or not self._hold:
+                self._switch_off()
             return
         up = delta > 0
         self._dir.value(1 if up != self._reverse else 0)
