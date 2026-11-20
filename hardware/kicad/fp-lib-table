@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "Focuser")(type "KiCad")(uri "${KIPRJMOD}/Focuser.pretty")(options "")(descr "Project footprints"))
+)

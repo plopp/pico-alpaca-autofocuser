@@ -53,7 +53,10 @@ def test_power_path():
     assert net_of('D2', '2') == '+5V' and net_of('D2', '1') == 'VSYS'
     assert net_of('C1', '1') == '+12V' and net_of('C1', '2') == 'GND'
     assert {net_of('R3', '1'), net_of('R3', '2')} == {'+3V3', 'TEMP_VDD'}
-    assert net_of('J3', 'R') == 'TEMP_VDD' and net_of('J3', 'S') == 'GND'
+    # 4-pole jack, 3-pole plug: the plug's sleeve spans R2 and S, both grounded
+    assert net_of('J3', 'R1') == 'TEMP_VDD'
+    assert net_of('J3', 'R2') == 'GND' and net_of('J3', 'S') == 'GND'
+    assert net_of('J1', '3') == 'GND'                 # DC-005 switch contact
 
 
 def test_no_pin_in_two_nets():
@@ -70,7 +73,13 @@ def test_every_net_member_is_a_part():
             assert ref in PARTS
 
 
-def test_assembled_parts_have_lcsc():
+def test_assembled_parts_have_lcsc_or_mpn():
     for part in PARTS.values():
         if part.assembled:
-            assert part.lcsc, part.ref
+            assert part.lcsc or part.mpn, part.ref          # MPN only = JLC global sourcing
+            assert part.lcsc != design.CONFIRM, part.ref
+
+
+def test_barrel_jack_is_5_5_x_2_1():
+    j1 = PARTS['J1']
+    assert j1.lcsc == 'C720557' and '5.5x2.1' in j1.value      # XUNPU DC-005-A200: 2.0 mm pin

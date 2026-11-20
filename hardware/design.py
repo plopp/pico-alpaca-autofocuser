@@ -6,43 +6,46 @@ docs/superpowers/specs/2026-11-20-focuser-pcb-design.md
 """
 from collections import namedtuple
 
-Part = namedtuple('Part', 'ref symbol footprint value lcsc assembled')
+# lcsc: LCSC/JLCPCB part number. mpn: manufacturer part number for parts JLCPCB has to buy in
+# (global sourcing) when there is no LCSC stock.
+Part = namedtuple('Part', 'ref symbol footprint value lcsc assembled mpn')
+Part.__new__.__defaults__ = ('',)
 
 CONFIRM = 'CONFIRM'   # LCSC number still to be confirmed before ordering
 
 _PARTS = [
-    Part('J1', 'Connector:Barrel_Jack', 'Connector_BarrelJack:BarrelJack_Horizontal',
+    Part('J1', 'Connector:Barrel_Jack_Switch', 'Focuser:BarrelJack_XunPu_DC-005-A200',
          'DC-005 5.5x2.1mm 12V', 'C720557', True),
     Part('F1', 'Device:Polyfuse', 'Fuse:Fuse_1812_4532Metric', '2A hold', 'C2982282', True),
     Part('D1', 'Device:D_Schottky', 'Diode_SMD:D_SMA', 'SS34', 'C8678', True),
     Part('D2', 'Device:D_Schottky', 'Diode_SMD:D_SMA', 'SS14', 'C2480', True),
     Part('U1', 'Converter_DCDC:R-78E5.0-0.5', 'Converter_DCDC:Converter_DCDC_RECOM_R-78E-0.5_THT',
-         'R-78E5.0-0.5', CONFIRM, True),
-    Part('C1', 'Device:C_Polarized', 'Capacitor_THT:CP_Radial_D8.0mm_P3.50mm', '100uF 50V',
-         CONFIRM, True),
+         'R-78E5.0-0.5', None, True, 'R-78E5.0-0.5'),    # no LCSC stock found: global sourcing
+    Part('C1', 'Device:C_Polarized', 'Capacitor_SMD:CP_Elec_8x10.5', '100uF 50V', 'C72480', True),
     Part('C2', 'Device:C', 'Capacitor_SMD:C_0805_2012Metric', '100nF 50V', 'C49678', True),
     Part('C3', 'Device:C', 'Capacitor_SMD:C_1206_3216Metric', '10uF 50V', 'C89632', True),
     Part('C4', 'Device:C', 'Capacitor_SMD:C_1206_3216Metric', '10uF 50V', 'C89632', True),
     Part('C5', 'Device:C', 'Capacitor_SMD:C_0805_2012Metric', '100nF 50V', 'C49678', True),
     Part('R1', 'Device:R', 'Resistor_SMD:R_0603_1608Metric', '10k', 'C25804', True),
-    Part('R2', 'Device:R', 'Resistor_SMD:R_0603_1608Metric', '4.7k', CONFIRM, True),
-    Part('R3', 'Device:R', 'Resistor_SMD:R_0603_1608Metric', '100R', CONFIRM, True),
+    Part('R2', 'Device:R', 'Resistor_SMD:R_0603_1608Metric', '4.7k', 'C23162', True),
+    Part('R3', 'Device:R', 'Resistor_SMD:R_0603_1608Metric', '100R', 'C22775', True),
     Part('JP1', 'Jumper:SolderJumper_2_Open', 'Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm',
          'MS1', None, False),
     Part('JP2', 'Jumper:SolderJumper_2_Open', 'Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm',
          'MS2', None, False),
     Part('J2', 'Connector:Conn_01x04_Pin', 'Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical',
          'Motor', 'C144395', True),
-    Part('J3', 'Connector_Audio:AudioJack3', 'Connector_Audio:Jack_3.5mm_CUI_SJ1-3523N_Horizontal',
-         'DS18B20', CONFIRM, True),
+    Part('J3', 'Connector_Audio:AudioJack4',
+         'Connector_Audio:Jack_3.5mm_KoreanHropartsElec_PJ-320D-4A_Horizontal',
+         'PJ-320D DS18B20', 'C95562', True),
     Part('J4', 'Connector:Conn_01x20_Socket', 'Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical',
-         'Pico 1-20', CONFIRM, True),
+         'Pico 1-20', 'C2905423', True),
     Part('J5', 'Connector:Conn_01x20_Socket', 'Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical',
-         'Pico 40-21', CONFIRM, True),
+         'Pico 40-21', 'C2905423', True),
     Part('J6', 'Connector:Conn_01x08_Socket', 'Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical',
-         'TMC2209 logic', 'C54973824', True),
+         'TMC2209 logic', 'C2905417', True),
     Part('J7', 'Connector:Conn_01x08_Socket', 'Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical',
-         'TMC2209 power', 'C54973824', True),
+         'TMC2209 power', 'C2905417', True),
 ]   # no mounting holes: the board slides into slots in the case
 
 PARTS = {p.ref: p for p in _PARTS}
@@ -76,7 +79,7 @@ NETS = {
     'VSYS': [('D2', '1'), pico_pin(39)],
     '+3V3': [pico_pin(36), _j7('VIO'), ('C5', '1'), ('R1', '2'), ('R2', '2'), ('R3', '2'),
              ('JP1', '2'), ('JP2', '2')],
-    'GND': [('J1', '2'), ('U1', '2'), ('C1', '2'), ('C2', '2'), ('C3', '2'), ('C4', '2'),
+    'GND': [('J1', '2'), ('J1', '3'), ('J3', 'R2'), ('U1', '2'), ('C1', '2'), ('C2', '2'), ('C3', '2'), ('C4', '2'),
             ('C5', '2'), _j7('GND1'), _j7('GND2'), ('J3', 'S')]
            + [pico_pin(n) for n in (3, 8, 13, 18, 23, 28, 33, 38)],
     'STEP': [pico_pin(21), _j6('STEP')],
@@ -85,7 +88,7 @@ NETS = {
     'MS1': [_j6('MS1'), ('JP1', '1')],
     'MS2': [_j6('MS2'), ('JP2', '1')],
     'TEMP_DQ': [pico_pin(29), ('R2', '1'), ('J3', 'T')],
-    'TEMP_VDD': [('R3', '1'), ('J3', 'R')],
+    'TEMP_VDD': [('R3', '1'), ('J3', 'R1')],
     'MOT_A1': [_j7('A1'), ('J2', '1')],
     'MOT_A2': [_j7('A2'), ('J2', '2')],
     'MOT_B1': [_j7('B1'), ('J2', '3')],

@@ -48,6 +48,8 @@ def report(path):
             'pads': {p.GetNumber(): p.GetNetname() for p in fp.Pads() if p.GetNumber()},
             'pad_xy': {p.GetNumber(): [mm(p.GetPosition().x), mm(p.GetPosition().y)]
                        for p in fp.Pads() if p.GetNumber()},
+            'pad_drill': {p.GetNumber(): [mm(p.GetDrillSize().x), mm(p.GetDrillSize().y)]
+                          for p in fp.Pads() if p.GetNumber()},
         }
     tracks = [{'net': t.GetNetname(), 'width': mm(t.GetWidth())}
               for t in board.GetTracks() if t.GetClass() == 'PCB_TRACK']

@@ -1,0 +1,18 @@
+Comment,Designator,Footprint,LCSC Part #,Manufacturer Part
+100uF 50V,C1,CP_Elec_8x10.5,C72480,
+100nF 50V,"C2,C5",C_0805_2012Metric,C49678,
+10uF 50V,"C3,C4",C_1206_3216Metric,C89632,
+SS34,D1,D_SMA,C8678,
+SS14,D2,D_SMA,C2480,
+2A hold,F1,Fuse_1812_4532Metric,C2982282,
+DC-005 5.5x2.1mm 12V,J1,BarrelJack_XunPu_DC-005-A200,C720557,
+Motor,J2,JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical,C144395,
+PJ-320D DS18B20,J3,Jack_3.5mm_KoreanHropartsElec_PJ-320D-4A_Horizontal,C95562,
+Pico 1-20,J4,PinSocket_1x20_P2.54mm_Vertical,C2905423,
+Pico 40-21,J5,PinSocket_1x20_P2.54mm_Vertical,C2905423,
+TMC2209 logic,J6,PinSocket_1x08_P2.54mm_Vertical,C2905417,
+TMC2209 power,J7,PinSocket_1x08_P2.54mm_Vertical,C2905417,
+10k,R1,R_0603_1608Metric,C25804,
+4.7k,R2,R_0603_1608Metric,C23162,
+100R,R3,R_0603_1608Metric,C22775,
+R-78E5.0-0.5,U1,Converter_DCDC_RECOM_R-78E-0.5_THT,,R-78E5.0-0.5

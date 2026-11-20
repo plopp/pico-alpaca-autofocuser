@@ -51,7 +51,7 @@ def test_right_edge_connectors(board):
 
 def test_jack_openings_face_out(board):
     assert board['footprints']['J1']['rotation'] % 360 == 0      # opening faces -x
-    assert board['footprints']['J3']['rotation'] % 360 == 90     # opening faces +x
+    assert board['footprints']['J3']['rotation'] % 360 == 180    # PJ-320D: opening faces +x
 
 
 def test_barrel_jack_centre_is_positive(board):
@@ -100,3 +100,15 @@ def test_no_part_numbers_on_silkscreen(board):
     for t in board['texts']:
         assert not re.fullmatch(r'C\d{4,}', t['text']), t      # LCSC numbers, not designators
         assert 'CONFIRM' not in t['text'], t
+
+
+def test_barrel_jack_matches_dc005_datasheet(board):
+    """XUNPU DC-005 drawing: blade pins in 3 x 0.8 mm slots, 6.2 mm and 4.7 mm apart."""
+    pads = fp(board, 'J1')['pad_xy']
+    drills = fp(board, 'J1')['pad_drill']
+    (x1, y1), (x2, y2), (x3, y3) = pads['1'], pads['2'], pads['3']
+    assert abs(abs(x1 - x2) - 6.2) < 0.01 and abs(y1 - y2) < 0.01
+    assert abs(abs(y3 - y1) - 4.7) < 0.01 and abs(abs(x1 - x3) - 2.7) < 0.01
+    for pin in ('1', '2', '3'):
+        dx, dy = drills[pin]
+        assert min(dx, dy) >= 0.8 and max(dx, dy) >= 3.0, (pin, dx, dy)     # slot, not round

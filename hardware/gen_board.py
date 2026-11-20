@@ -32,16 +32,16 @@ PLACEMENT = {
     'J4': (PICO_X, PICO_BOTTOM_ROW_Y, 90),
     'J6': (TMC_LOGIC_X, TMC_PIN1_Y, 180),
     'J7': (TMC_POWER_X, TMC_PIN1_Y, 180),
-    'J1': (14.04, 33.5, 0),            # opening faces -x (left edge)
+    'J1': (14.2, 33.5, 0),             # DC-005, opening faces -x (left edge)
     'J2': (76.0, 24.0, 90),            # motor, right edge, pins going up
-    'J3': (73.41, 36.0, 90),           # 3.5 mm jack, opening faces +x (right edge)
+    'J3': (71.1, 36.0, 180),           # PJ-320D 3.5 mm jack, opening faces +x (right edge)
     'F1': (21.0, 31.0, 0),
     'D1': (28.0, 31.0, 0),
     'U1': (21.0, 41.0, 0),
     'C3': (33.5, 37.5, 0),
     'C4': (33.5, 41.5, 0),
     'D2': (42.0, 41.5, 0),
-    'C1': (62.0, 36.0, 180),           # + pad nearest VM
+    'C1': (58.5, 36.0, 180),           # + pad nearest VM
     'C2': (63.0, 30.2, 0),
     'C5': (64.0, 12.0, 90),
     'R1': (60.0, 26.0, 0),
@@ -157,6 +157,7 @@ def build():
     kicad_env.write_project()
     board = pcbnew.NewBoard(str(kicad_env.PCB))
     board.GetDesignSettings().SetCopperLayerCount(2)
+    board.GetDesignSettings().SetAuxOrigin(mmv(0, H))     # drill/place origin: bottom-left corner
 
     nets = {}
     for name in design.NETS:
@@ -167,7 +168,8 @@ def build():
 
     for ref, part in design.PARTS.items():
         lib, name = part.footprint.split(':')
-        fp = pcbnew.FootprintLoad(str(kicad_env.FOOTPRINTS / (lib + '.pretty')), name)
+        lib_dir = kicad_env.KICAD_DIR if lib == 'Focuser' else kicad_env.FOOTPRINTS
+        fp = pcbnew.FootprintLoad(str(lib_dir / (lib + '.pretty')), name)
         fp.SetFPID(pcbnew.LIB_ID(lib, name))
         fp.SetReference(ref)
         fp.SetValue(part.value)
