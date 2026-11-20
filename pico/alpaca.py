@@ -114,6 +114,15 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
         'driverversion': lambda p: DRIVER_VERSION,
         'interfaceversion': lambda p: INTERFACE_VERSION,
         'supportedactions': lambda p: [],
+        'absolute': lambda p: True,
+        'ismoving': lambda p: stepper.is_moving,
+        'maxincrement': lambda p: settings['max_increment'],
+        'maxstep': lambda p: settings['max_step'],
+        'position': lambda p: stepper.position,
+        'stepsize': not_implemented('StepSize'),
+        'tempcompavailable': lambda p: False,
+        'tempcomp': lambda p: False,
+        'temperature': not_implemented('Temperature'),
         'devicestate': lambda p: [
             {'Name': 'IsMoving', 'Value': stepper.is_moving},
             {'Name': 'Position', 'Value': stepper.position},
@@ -134,7 +143,21 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
         p.required_bool('Raw')
         raise AlpacaError(NOT_IMPLEMENTED, 'Command methods are not implemented')
 
+    def put_move(p):
+        position = p.required_int('Position')
+        if position < 0 or position > settings['max_step']:
+            raise AlpacaError(INVALID_VALUE, 'Position {} is outside 0..{}'.format(
+                position, settings['max_step']))
+        stepper.move_to(position)
+
+    def put_tempcomp(p):
+        if p.required_bool('TempComp'):
+            raise AlpacaError(NOT_IMPLEMENTED, 'Temperature compensation is not available')
+
     put_members = {
+        'move': put_move,
+        'halt': lambda p: stepper.halt(),
+        'tempcomp': put_tempcomp,
         'connected': put_connected,
         'connect': lambda p: set_connected(True),
         'disconnect': lambda p: set_connected(False),
@@ -183,5 +206,57 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
     @app.put('/api/v1/focuser/<int:devnum>/<member>')
     async def device_put(req, devnum, member):
         return respond(req, devnum, member, put_members, False)
+
+    # ---- Management API ----
+    def management(req, value):
+        try:
+            client_txn = _Params(req).uint('ClientTransactionID')
+        except BadRequest as e:
+            return str(e), 400
+        state['server_txn'] += 1
+        return {'Value': value, 'ClientTransactionID': client_txn,
+                'ServerTransactionID': state['server_txn'],
+                'ErrorNumber': 0, 'ErrorMessage': ''}
+
+    @app.get('/management/apiversions')
+    async def api_versions(req):
+        return management(req, [1])
+
+    @app.get('/management/v1/description')
+    async def server_description(req):
+        return management(req, {'ServerName': settings['name'],
+                                'Manufacturer': MANUFACTURER,
+                                'ManufacturerVersion': DRIVER_VERSION,
+                                'Location': settings['location']})
+
+    @app.get('/management/v1/configureddevices')
+    async def configured_devices(req):
+        return management(req, [{'DeviceName': settings['name'],
+                                 'DeviceType': 'Focuser',
+                                 'DeviceNumber': 0,
+                                 'UniqueID': unique_id}])
+
+    # ---- Setup pages (status only; settings live in config.toml) ----
+    def setup_page():
+        rows = (('Position', stepper.position),
+                ('Moving', stepper.is_moving),
+                ('Connected', state['connected']),
+                ('Max step', settings['max_step']),
+                ('Steps per second', settings['steps_per_sec']),
+                ('IP address', ip_getter()))
+        cells = ''.join('<tr><th>{}</th><td>{}</td></tr>'.format(k, v) for k, v in rows)
+        html = ('<!DOCTYPE html><html><head><meta charset="utf-8"><title>{0}</title></head>'
+                '<body><h1>{0}</h1><table>{1}</table>'
+                '<p>Settings are in config.toml on the Pico.</p></body></html>'
+                ).format(settings['name'], cells)
+        return html, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+    @app.get('/setup')
+    async def server_setup(req):
+        return setup_page()
+
+    @app.get('/setup/v1/focuser/<int:devnum>/setup')
+    async def device_setup(req, devnum):
+        return setup_page()
 
     return app
