@@ -1,4 +1,12 @@
-pico/microdot.py is Microdot by Miguel Grinberg, MIT License: https://github.com/miguelgrinberg/microdot
+Third-party software
+
+- pico/microdot.py: Microdot by Miguel Grinberg, https://github.com/miguelgrinberg/microdot
+  MIT License, Copyright (c) 2019 Miguel Grinberg. The full license notice is at the top of
+  the file and is copied to the Pico with it.
+
+History
 
 The first version of this project was based on the ASCOM Initiative AlpycaDevice template
-(https://github.com/ASCOMInitiative/AlpycaDevice). The current code is a fresh implementation.
+(https://github.com/ASCOMInitiative/AlpycaDevice, MIT License, Copyright (c) 2022 Ethan
+Chappel and Bob Denny). That code was replaced by a fresh implementation, but remains in
+this repository's git history, so their copyright line stays in LICENSE.
