@@ -1,1 +1,4 @@
-Created out of the ASCOM Initiative AlpycaDevice repo: https://github.com/ASCOMInitiative/AlpycaDevice
+pico/microdot.py is Microdot by Miguel Grinberg, MIT License: https://github.com/miguelgrinberg/microdot
+
+The first version of this project was based on the ASCOM Initiative AlpycaDevice template
+(https://github.com/ASCOMInitiative/AlpycaDevice). The current code is a fresh implementation.
