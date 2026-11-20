@@ -1,3 +1,5 @@
+import pytest
+
 from settings import load_settings
 
 
@@ -26,9 +28,21 @@ def test_defaults_when_no_files(tmp_path):
 
 
 def test_config_overrides(tmp_path):
+    s = _load(tmp_path, config='[device]\nsteps_per_sec = 400\n')
+    assert s['steps_per_sec'] == 400
+    assert s['max_step'] == 100000
+
+
+def test_start_position_defaults_to_middle_of_max_step(tmp_path):
     s = _load(tmp_path, config='[device]\nmax_step = 2000\n')
     assert s['max_step'] == 2000
-    assert s['start_position'] == 50000
+    assert s['start_position'] == 1000
+
+
+@pytest.mark.parametrize('start,expected', [(5000, 2000), (-5, 0), (700, 700)])
+def test_start_position_clamped_to_range(tmp_path, start, expected):
+    s = _load(tmp_path, config='[device]\nmax_step = 2000\nstart_position = {}\n'.format(start))
+    assert s['start_position'] == expected
 
 
 def test_missing_secret_gives_empty_wifi(tmp_path):

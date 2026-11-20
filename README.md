@@ -1,8 +1,9 @@
 # pico-alpaca-autofocuser
 
 An ASCOM Alpaca focuser (IFocuserV4, absolute) for a Raspberry Pi Pico 2 W, written in
-MicroPython, for autofocus with NINA. It drives a TMC2209 stepper driver over Wi-Fi and
-passes ASCOM ConformU 4.1.
+MicroPython, for autofocus with NINA. It drives a TMC2209 stepper driver over Wi-Fi.
+It passes ASCOM ConformU 4.1 against the desktop simulator (`sim.py`); the run on real
+hardware is pending a separate motor supply (see Wiring).
 
 ## Wiring
 
@@ -32,10 +33,11 @@ Don't power VM from the Pico's USB 5 V (VBUS): the motor can hang or reset the b
 4. `python3 -m venv .venv && .venv/bin/pip install mpremote`, then `tools/deploy.sh`.
 
 At power-up the LED blinks while joining Wi-Fi and stays on when connected. In NINA,
-choose the focuser from the Alpaca devices list (it is found automatically).
+choose the focuser from the Alpaca devices list. Discovery only works when NINA's PC is on
+the same subnet as the Pico; otherwise add it manually by IP address, port 5555.
 
-**Position:** the focuser has no encoder. Every power-up it reports position 50000
-(the middle of 0–100000), so set focus roughly by hand before powering on.
+**Position:** the focuser has no encoder. Every power-up it reports the middle of the
+range (50000 of 0–100000 by default), so set focus roughly by hand before powering on.
 
 ## Development
 

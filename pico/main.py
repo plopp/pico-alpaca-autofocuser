@@ -40,15 +40,18 @@ def connect_wifi(wlan, settings, led):
     print('[main] Wi-Fi connected, IP address', wlan.ifconfig()[0])
 
 
-async def wifi_watchdog(wlan, settings, led):
+async def wifi_watchdog(wlan, settings, led, interval=WIFI_CHECK_S):
     while True:
-        await asyncio.sleep(WIFI_CHECK_S)
-        if not wlan.isconnected():
-            led.off()
-            print('[main] Wi-Fi lost, reconnecting')
-            wlan.connect(settings['wifi_ssid'], settings['wifi_password'])
-        else:
-            led.on()
+        await asyncio.sleep(interval)
+        try:
+            if not wlan.isconnected():
+                led.off()
+                print('[main] Wi-Fi lost, reconnecting')
+                wlan.connect(settings['wifi_ssid'], settings['wifi_password'])
+            else:
+                led.on()
+        except Exception as e:      # Never let a Wi-Fi hiccup stop the server
+            print('[main] Wi-Fi watchdog error:', repr(e))
 
 
 async def serve(app, port, wlan, settings, led):
@@ -58,8 +61,20 @@ async def serve(app, port, wlan, settings, led):
     await asyncio.gather(*tasks)
 
 
+def make_stepper(settings):
+    return Stepper(Pin(settings['step_pin'], Pin.OUT, value=0),
+                   Pin(settings['dir_pin'], Pin.OUT, value=0),
+                   Pin(settings['en_pin'], Pin.OUT, value=1),
+                   Timer(-1),
+                   settings['steps_per_sec'], settings['start_position'],
+                   settings['max_step'], settings['reverse'],
+                   settings['hold_when_idle'])
+
+
 def main():
     settings = load_settings()
+    # Drive EN high (driver off) before anything slow, like joining Wi-Fi
+    stepper = make_stepper(settings)
     led = Pin('LED', Pin.OUT, value=0)
     wlan = None
     if settings['wifi_ssid']:
@@ -73,20 +88,20 @@ def main():
     else:
         print('[main] No Wi-Fi configured: put ssid/password in secret.toml')
 
-    stepper = Stepper(Pin(settings['step_pin'], Pin.OUT, value=0),
-                      Pin(settings['dir_pin'], Pin.OUT, value=0),
-                      Pin(settings['en_pin'], Pin.OUT, value=1),
-                      Timer(-1),
-                      settings['steps_per_sec'], settings['start_position'],
-                      settings['max_step'], settings['reverse'],
-                      settings['hold_when_idle'])
     ip = (lambda: wlan.ifconfig()[0]) if wlan else (lambda: '')
     app = create_app(stepper, settings, unique_id(), ip)
     print('[main] Alpaca focuser on port {}'.format(settings['port']))
     try:
         asyncio.run(serve(app, settings['port'], wlan, settings, led))
-    finally:
+    except KeyboardInterrupt:            # Ctrl-C from the REPL: stop, don't reset
         stepper.disable()
+        raise
+    except Exception as e:               # Anything else: restart rather than go dark
+        stepper.disable()
+        print('[main] Server stopped:', repr(e), '- resetting in 5 s')
+        time.sleep(5)
+        machine.reset()
 
 
-main()
+if __name__ == '__main__':
+    main()

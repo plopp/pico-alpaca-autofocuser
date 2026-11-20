@@ -8,7 +8,7 @@ _FIELDS = (
     ('device', 'name', 'name', 'Pico Focuser'),
     ('device', 'location', 'location', 'Observatory'),
     ('device', 'max_step', 'max_step', 100000),
-    ('device', 'start_position', 'start_position', 50000),
+    ('device', 'start_position', 'start_position', None),   # None: middle of range
     ('device', 'max_increment', 'max_increment', 100000),
     ('device', 'steps_per_sec', 'steps_per_sec', 800),
     ('device', 'reverse', 'reverse', False),
@@ -33,6 +33,11 @@ def load_settings(config_path='config.toml', secret_path='secret.toml'):
     settings = {}
     for section, key, name, default in _FIELDS:
         settings[name] = config.get(section, {}).get(key, default)
+
+    # Start in the middle of the range unless set; never outside 0..max_step
+    if settings['start_position'] is None:
+        settings['start_position'] = settings['max_step'] // 2
+    settings['start_position'] = max(0, min(settings['start_position'], settings['max_step']))
 
     wifi = _read(secret_path).get('wifi', {})
     ssid = wifi.get('ssid', '')

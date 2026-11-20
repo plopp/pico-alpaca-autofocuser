@@ -107,3 +107,16 @@ def test_disable_halts():
     s.disable()
     assert s.is_moving is False
     assert en.value() == 1
+
+
+def test_hold_when_idle_false_reenables_for_next_move():
+    s, step, dirp, en, timer = make(hold_when_idle=False)
+    s.enable()
+    s.move_to(50002)
+    timer.tick(5)
+    assert en.value() == 1
+    s.move_to(50010)
+    assert en.value() == 0           # driver back on before any step pulse
+    timer.tick(20)
+    assert s.position == 50010
+    assert en.value() == 1           # and off again after arriving

@@ -53,6 +53,8 @@ class Stepper:
             raise ValueError('target out of range')
         self._target = target
         if not self._running and target != self._position:
+            if not self._enabled:       # hold_when_idle=False switched it off
+                self.enable()
             self._running = True
             self._timer.init(mode=self._timer.PERIODIC, freq=self._freq,
                              callback=self._tick)

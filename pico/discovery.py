@@ -13,11 +13,12 @@ def discovery_reply(data, alpaca_port):
     return json.dumps({'AlpacaPort': alpaca_port}).encode()
 
 
-async def run_discovery(alpaca_port, udp_port=DISCOVERY_PORT):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('0.0.0.0', udp_port))
-    sock.setblocking(False)
+async def run_discovery(alpaca_port, udp_port=DISCOVERY_PORT, sock=None):
+    if sock is None:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(('0.0.0.0', udp_port))
+        sock.setblocking(False)
     while True:
         try:
             data, addr = sock.recvfrom(64)
@@ -26,4 +27,7 @@ async def run_discovery(alpaca_port, udp_port=DISCOVERY_PORT):
             continue
         reply = discovery_reply(data, alpaca_port)
         if reply:
-            sock.sendto(reply, addr)
+            try:
+                sock.sendto(reply, addr)
+            except Exception as e:  # e.g. no route during a Wi-Fi blip: keep serving
+                print('[discovery] reply failed:', repr(e))
