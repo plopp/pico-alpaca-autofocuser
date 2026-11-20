@@ -38,13 +38,18 @@ Everything to upload is in `fab/`:
 
 **Plugging in the modules**
 - **Pico 2 W:** USB end towards the J1 edge (silkscreen "USB"), components facing up.
-- **TMC2209:** its **EN** pin goes in the socket hole marked **EN**, and **VM** goes on the
-  motor-connector side. Plugging it in backwards destroys the driver, so check before applying power.
+- **TMC2209:** components (heatsink) up, with its **EN** pin in the hole marked **EN** and its
+  **VM** pin in the hole marked **VM**. Both are at the end nearest the motor connector; the
+  logic row (EN…DIR) is on the board-edge side. Plugging it in any other way puts 12 V on the
+  wrong pins and destroys the driver, so check before applying power.
 - Set the motor current with the TMC2209's potentiometer *before* connecting the motor. A
   focuser needs little torque: start low.
 
 **Microstepping:** JP1/JP2 open (default) = 1/8 step, which is what the firmware assumes.
 Bridging them with solder changes MS1/MS2. See the TMC2209 datasheet, and update `max_step` in `config.toml`.
+
+**Wi-Fi:** the Pico's antenna end (opposite USB) has no copper under it (datasheet keep-out,
+14 × 9 mm) and the driver sits more than 10 mm away. Don't put metal near that end in the case.
 
 **Mounting:** no screw holes. The board slides into slots in the case, and the 2.5 mm strips along both
 long edges are kept free of parts.

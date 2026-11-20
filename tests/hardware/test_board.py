@@ -112,3 +112,39 @@ def test_barrel_jack_matches_dc005_datasheet(board):
     for pin in ('1', '2', '3'):
         dx, dy = drills[pin]
         assert min(dx, dy) >= 0.8 and max(dx, dy) >= 3.0, (pin, dx, dy)     # slot, not round
+
+
+def test_tmc2209_socket_handedness_matches_module(board):
+    """BTT TMC2209 v1.3 seen from above (user's photo): power row VM..GND on top, logic row
+    EN..DIR below, EN and VM at the left end. Rotations keep the sign of
+    (DIR - EN) x (VM - EN); a mirror flips it. The module's sign is negative (y down)."""
+    en = fp(board, 'J6')['pad_xy']['1']
+    dir_ = fp(board, 'J6')['pad_xy']['8']
+    vm = fp(board, 'J7')['pad_xy']['1']
+    cross = (dir_[0] - en[0]) * (vm[1] - en[1]) - (dir_[1] - en[1]) * (vm[0] - en[0])
+    assert abs(abs(cross) - 17.78 * 12.7) < 0.1          # rows 12.7 mm apart, pins aligned
+    assert cross < 0, 'TMC2209 sockets are mirrored: the module would plug in reversed'
+
+
+def _antenna_box(board):
+    """Pico 2 W datasheet 2.2.1, figure 7: 14 mm wide x 9 mm deep at the end opposite USB,
+    centred between the pin rows."""
+    x0, y0, x1, y1 = board['pico_outline']
+    mid = (y0 + y1) / 2
+    return (x1 - 9.0, mid - 7.0, x1, mid + 7.0)
+
+
+def test_no_copper_pour_or_vias_under_antenna(board):
+    ax0, ay0, ax1, ay1 = _antenna_box(board)
+    keepouts = [k for k in board['rule_areas'] if k['no_fill'] and k['no_vias']
+                and {'F.Cu', 'B.Cu'} <= set(k['layers'])]
+    assert any(k['bbox'][0] <= ax0 and k['bbox'][1] <= ay0 and k['bbox'][2] >= ax1
+               and k['bbox'][3] >= ay1 for k in keepouts), 'no keep-out under the antenna'
+    for v in board['vias']:
+        assert not (ax0 <= v[0] <= ax1 and ay0 <= v[1] <= ay1), v
+
+
+def test_driver_clear_of_antenna(board):
+    pico_end = board['pico_outline'][2]
+    tmc_left = min(fp(board, 'J6')['courtyard'][0], fp(board, 'J7')['courtyard'][0])
+    assert tmc_left - pico_end >= 10.0

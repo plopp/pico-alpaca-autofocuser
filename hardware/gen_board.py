@@ -24,27 +24,37 @@ PICO_TOP_ROW_Y = 9.0                      # J5: Pico pins 40..21
 PICO_BOTTOM_ROW_Y = PICO_TOP_ROW_Y + 17.78  # J4: Pico pins 1..20
 PICO_OUTLINE = (0.0, PICO_TOP_ROW_Y - 1.61, PICO_X + 19 * PITCH + 1.13, PICO_BOTTOM_ROW_Y + 1.61)
 
-TMC_LOGIC_X, TMC_POWER_X, TMC_PIN1_Y = 56.0, 68.7, 27.0   # pin 1 at the bottom, pins go up
+# TMC2209 (BTT v1.3) as seen from above, rotated so its rows run along y: POWER row on the
+# LEFT, LOGIC row on the RIGHT, EN/VM at the BOTTOM (pin 1), pins counting up. Mirroring this
+# would put 12 V on the wrong pins (test_tmc2209_socket_handedness_matches_module).
+# Top-right corner: >= 10 mm from the Pico's antenna end.
+TMC_POWER_X, TMC_LOGIC_X, TMC_PIN1_Y = 65.49, 78.19, 22.09
+
+# Pico 2 W antenna keep-out (datasheet 2.2.1, figure 7): 14 mm wide x 9 mm deep at the end
+# opposite USB, centred between the pin rows. No pour and no vias under it (+0.5 mm margin).
+_PICO_MID_Y = (PICO_OUTLINE[1] + PICO_OUTLINE[3]) / 2
+ANTENNA_KEEPOUT = (PICO_OUTLINE[2] - 9.5, _PICO_MID_Y - 7.5, PICO_OUTLINE[2] + 0.5, _PICO_MID_Y + 7.5)
+EDGE_ROUTING_KEEPOUT = 0.6     # no router tracks/vias this close to the board edge
 
 # ref: (x, y, rotation in degrees)
 PLACEMENT = {
     'J5': (PICO_X, PICO_TOP_ROW_Y, 90),
     'J4': (PICO_X, PICO_BOTTOM_ROW_Y, 90),
-    'J6': (TMC_LOGIC_X, TMC_PIN1_Y, 180),
-    'J7': (TMC_POWER_X, TMC_PIN1_Y, 180),
+    'J7': (TMC_POWER_X, TMC_PIN1_Y, 180),   # VM..GND, pin 1 (VM) at the bottom
+    'J6': (TMC_LOGIC_X, TMC_PIN1_Y, 180),   # EN..DIR, pin 1 (EN) at the bottom
     'J1': (14.2, 33.5, 0),             # DC-005, opening faces -x (left edge)
-    'J2': (76.0, 24.0, 90),            # motor, right edge, pins going up
-    'J3': (71.1, 36.0, 180),           # PJ-320D 3.5 mm jack, opening faces +x (right edge)
+    'J2': (69.0, 27.5, 0),             # motor, right edge below the driver, cable up
+    'J3': (71.1, 38.0, 180),           # PJ-320D 3.5 mm jack, opening faces +x (right edge)
     'F1': (21.0, 31.0, 0),
     'D1': (28.0, 31.0, 0),
     'U1': (21.0, 41.0, 0),
     'C3': (33.5, 37.5, 0),
     'C4': (33.5, 41.5, 0),
     'D2': (42.0, 41.5, 0),
-    'C1': (58.5, 36.0, 180),           # + pad nearest VM
-    'C2': (63.0, 30.2, 0),
-    'C5': (64.0, 12.0, 90),
-    'R1': (60.0, 26.0, 0),
+    'C1': (60.0, 36.0, 270),           # + pad towards VM
+    'C2': (62.0, 26.0, 90),            # at VM
+    'C5': (71.8, 7.0, 90),             # at VIO, under the module
+    'R1': (72.0, 21.0, 0),             # EN pull-up, under the module
     'JP1': (46.0, 31.5, 0),
     'JP2': (46.0, 35.0, 0),
     'R2': (58.0, 44.0, 0),
@@ -57,13 +67,12 @@ HIDDEN_REFS = ('J2', 'J4', 'J5', 'J6', 'J7')
 SILK = [  # text, x, y, size, rotation
     ('USB', 3.5, (PICO_OUTLINE[1] + PICO_OUTLINE[3]) / 2, 1.2, 90),
     ('Pico 2 W', 27.0, 17.9, 1.5, 0),
-    ('TMC2209', 62.35, 18.0, 1.2, 90),
-    ('EN', TMC_LOGIC_X, TMC_PIN1_Y + 3.0, 1.0, 0),
-    ('VM', TMC_POWER_X + 2.9, TMC_PIN1_Y, 0.8, 0),
+    ('TMC2209', (TMC_POWER_X + TMC_LOGIC_X) / 2, 13.5, 1.2, 90),
+    ('EN', TMC_LOGIC_X - 2.6, TMC_PIN1_Y, 0.8, 0),
+    ('VM', TMC_POWER_X - 2.6, TMC_PIN1_Y, 0.8, 0),
     ('12V (+) centre', 8.5, 42.5, 1.0, 0),
-    ('A1', 72.4, 24.0, 0.8, 0), ('A2', 72.4, 21.5, 0.8, 0),
-    ('B1', 72.4, 19.0, 0.8, 0), ('B2', 72.4, 16.5, 0.8, 0),
-    ('MOTOR', 76.0, 11.0, 1.0, 0),
+    ('A1', 69.0, 32.3, 0.8, 0), ('A2', 71.5, 32.3, 0.8, 0),
+    ('B1', 74.0, 32.3, 0.8, 0), ('B2', 76.5, 32.3, 0.8, 0),
     ('T=DATA R=3V3 S=GND', 71.5, 45.0, 0.8, 0),
     ('MS1/MS2 open = 1/8', 46.0, 37.8, 0.8, 0),
     ('Pico Alpaca Focuser v1.0', 30.0, 48.0, 1.2, 0),
@@ -96,8 +105,9 @@ def add_text(board, text, x, y, size, rotation):
 
 
 # Ground stitching vias tie the top and bottom pours together (no isolated pour islands)
-STITCH_VIAS = ([(x, 3.2) for x in range(8, 76, 8)] + [(x, 46.8) for x in (8, 16, 24, 32, 40, 48, 56, 64)]
-               + [(x, 15.0) for x in (10, 20, 30, 40)] + [(x, 21.0) for x in (15, 25, 35, 45)])
+STITCH_VIAS = ([(x, 3.2) for x in (8, 16, 24, 32, 40, 48, 56)]
+               + [(x, 46.8) for x in (8, 16, 24, 32, 40, 48, 56, 64)]
+               + [(x, 15.0) for x in (10, 20, 30, 40)] + [(x, 21.0) for x in (15, 25, 35)])
 
 
 def add_via(board, net, pos):
@@ -136,6 +146,37 @@ def add_gnd_fanout_vias(board, net):
             track.SetLayer(pcbnew.F_Cu)
             track.SetNet(net)
             board.Add(track)
+
+
+def add_rule_area(board, name, x0, y0, x1, y1, no_fill, no_tracks):
+    area = pcbnew.ZONE(board)
+    area.SetIsRuleArea(True)
+    layers = pcbnew.LSET()
+    layers.AddLayer(pcbnew.F_Cu)
+    layers.AddLayer(pcbnew.B_Cu)
+    area.SetLayerSet(layers)
+    area.SetDoNotAllowZoneFills(no_fill)
+    area.SetDoNotAllowVias(True)
+    area.SetDoNotAllowTracks(no_tracks)
+    area.SetDoNotAllowPads(False)
+    area.SetDoNotAllowFootprints(False)
+    area.SetZoneName(name)
+    outline = area.Outline()
+    outline.NewOutline()
+    for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
+        outline.Append(pcbnew.FromMM(x), pcbnew.FromMM(y))
+    board.Add(area)
+
+
+def add_edge_keepouts(board):
+    e = EDGE_ROUTING_KEEPOUT
+    for i, box in enumerate(((0, 0, W, e), (0, H - e, W, H), (0, 0, e, H), (W - e, 0, W, H))):
+        add_rule_area(board, 'Edge {}'.format(i), *box, no_fill=False, no_tracks=True)
+
+
+def add_antenna_keepout(board):
+    # Tracks allowed (none need to cross it); no pour, no vias
+    add_rule_area(board, 'Pico antenna', *ANTENNA_KEEPOUT, no_fill=True, no_tracks=False)
 
 
 def add_gnd_zone(board, layer, net):
@@ -207,8 +248,10 @@ def build():
     add_rect(board, pcbnew.User_1, *PICO_OUTLINE)                     # Pico silhouette (tests)
     add_rect(board, pcbnew.F_SilkS, PICO_OUTLINE[0] + 1.11, PICO_OUTLINE[1],
              PICO_OUTLINE[2], PICO_OUTLINE[3])                        # Pico PCB outline
-    add_rect(board, pcbnew.F_SilkS, TMC_LOGIC_X - 1.27 - 0.2, TMC_PIN1_Y - 7 * PITCH - 1.27 - 0.2,
-             TMC_POWER_X + 1.27 + 0.2, TMC_PIN1_Y + 1.27 + 0.2)       # TMC2209 module outline
+    add_rect(board, pcbnew.F_SilkS, TMC_POWER_X - 1.27 - 0.2, TMC_PIN1_Y - 7 * PITCH - 1.27 - 0.2,
+             TMC_LOGIC_X + 1.27 + 0.2, TMC_PIN1_Y + 1.27 + 0.2)       # TMC2209 module outline
+    add_antenna_keepout(board)
+    add_edge_keepouts(board)
     for text in SILK:
         add_text(board, *text)
 

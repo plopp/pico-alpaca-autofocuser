@@ -53,8 +53,14 @@ def report(path):
         }
     tracks = [{'net': t.GetNetname(), 'width': mm(t.GetWidth())}
               for t in board.GetTracks() if t.GetClass() == 'PCB_TRACK']
+    vias = [[mm(v.GetPosition().x), mm(v.GetPosition().y)]
+            for v in board.GetTracks() if v.GetClass() == 'PCB_VIA']
+    rule_areas = [{'layers': [pcbnew.LayerName(l) for l in z.GetLayerSet().Seq()],
+                   'bbox': bbox(z.GetBoundingBox()),
+                   'no_fill': z.GetDoNotAllowZoneFills(), 'no_vias': z.GetDoNotAllowVias()}
+                  for z in board.Zones() if z.GetIsRuleArea()]
     return {'outline': bbox(edge), 'pico_outline': pico, 'texts': texts,
-            'footprints': footprints, 'tracks': tracks}
+            'footprints': footprints, 'tracks': tracks, 'vias': vias, 'rule_areas': rule_areas}
 
 
 if __name__ == '__main__':

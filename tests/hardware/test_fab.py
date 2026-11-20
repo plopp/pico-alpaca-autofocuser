@@ -79,3 +79,10 @@ def test_cpl_y_axis_points_up(fab):
 def test_schematic_pdf_and_renders(fab):
     for name in ('focuser-schematic.pdf', 'render-top.png', 'render-iso.png'):
         assert (fab / name).stat().st_size > 1000, name
+
+
+def test_cpl_uses_part_centres(fab):
+    """JLC expects part centres; footprint origins (pin 1) put THT parts 7-24 mm off."""
+    rows = {r['Designator']: r for r in _rows(fab / 'focuser-cpl-jlc.csv')}
+    assert abs(float(rows['J4']['Mid X']) - (2.72 + 50.98) / 2) < 0.6     # 20-pin socket centre
+    assert abs(float(rows['J4']['Mid Y']) - (50 - 26.78)) < 0.6

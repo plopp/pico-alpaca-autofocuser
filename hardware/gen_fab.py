@@ -53,20 +53,29 @@ def bom(out):
 
 
 def cpl(out):
+    """Part centres (courtyard centre), not footprint origins: JLC places by centre, and the
+    origins of THT parts sit on pin 1 (up to 24 mm off). mm from the bottom-left corner, y up."""
+    import pcbnew
+    board = pcbnew.LoadBoard(str(kicad_env.PCB))
+    origin = board.GetDesignSettings().GetAuxOrigin()
     assembled = {p.ref for p in design.PARTS.values() if p.assembled}
-    with tempfile.TemporaryDirectory() as tmp:
-        pos = Path(tmp) / 'pos.csv'
-        cli('pcb', 'export', 'pos', '--format', 'csv', '--units', 'mm', '--side', 'both',
-            '--use-drill-file-origin', '-o', pos, kicad_env.PCB)
-        with open(pos, newline='') as f:
-            rows = list(csv.DictReader(f))
+    rows = []
+    for fp in board.GetFootprints():
+        ref = fp.GetReference()
+        if ref not in assembled:
+            continue
+        court = fp.GetCourtyard(pcbnew.F_CrtYd)
+        box = court.BBox() if court.OutlineCount() else fp.GetBoundingBox(False)
+        centre = box.GetCenter()
+        x = pcbnew.ToMM(centre.x - origin.x)
+        y = pcbnew.ToMM(origin.y - centre.y)
+        side = 'Bottom' if fp.IsFlipped() else 'Top'
+        rows.append([ref, '{:.3f}'.format(x), '{:.3f}'.format(y), side,
+                     '{:.1f}'.format(fp.GetOrientationDegrees() % 360)])
     with open(out / 'focuser-cpl-jlc.csv', 'w', newline='') as f:
         w = csv.writer(f)
         w.writerow(['Designator', 'Mid X', 'Mid Y', 'Layer', 'Rotation'])
-        for r in rows:
-            if r['Ref'] in assembled:
-                w.writerow([r['Ref'], r['PosX'], r['PosY'],
-                            'Top' if r['Side'] == 'top' else 'Bottom', r['Rot']])
+        w.writerows(sorted(rows))
 
 
 def docs(out):
