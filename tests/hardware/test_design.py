@@ -83,3 +83,9 @@ def test_assembled_parts_have_lcsc_or_mpn():
 def test_barrel_jack_is_5_5_x_2_1():
     j1 = PARTS['J1']
     assert j1.lcsc == 'C720557' and '5.5x2.1' in j1.value      # XUNPU DC-005-A200: 2.0 mm pin
+
+
+def test_regulator_has_jlcpcb_part_number():
+    """U1 = RECOM R-78E5.0-0.5, JLCPCB/LCSC C18212367 (the part used in the first order)."""
+    u1 = design.PARTS['U1']
+    assert u1.lcsc == 'C18212367' and u1.mpn == 'R-78E5.0-0.5'

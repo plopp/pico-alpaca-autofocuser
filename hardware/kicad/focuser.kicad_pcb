@@ -2064,6 +2064,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C18212367"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28bdd768-e25d-42cd-bc65-e1b8e10906d6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/fdf9dbfa-72a0-50ba-942e-8bec78b4aaa5")
 		(sheetname "Root")
 		(sheetfile "focuser.kicad_sch")
