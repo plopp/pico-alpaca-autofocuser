@@ -19,10 +19,8 @@ _PARTS = [
     Part('F1', 'Device:Polyfuse', 'Fuse:Fuse_1812_4532Metric', '2A hold', 'C2982282', True),
     Part('D1', 'Device:D_Schottky', 'Diode_SMD:D_SMA', 'SS34', 'C8678', True),
     Part('D2', 'Device:D_Schottky', 'Diode_SMD:D_SMA', 'SS14', 'C2480', True),
-    # DEXU K7805-500R3 switching module (LCSC C909662, stocked and assembled by JLCPCB): same
-    # pin order (1 Vin, 2 GND, 3 +5 V) and 2.54 mm pitch as the R-78E, so its footprint fits
     Part('U1', 'Converter_DCDC:R-78E5.0-0.5', 'Converter_DCDC:Converter_DCDC_RECOM_R-78E-0.5_THT',
-         'K7805-500R3', 'C909662', True),
+         'R-78E5.0-0.5', None, True, 'R-78E5.0-0.5'),    # no LCSC stock found: global sourcing
     Part('C1', 'Device:C_Polarized', 'Capacitor_SMD:CP_Elec_8x10.5', '100uF 50V', 'C72480', True),
     Part('C2', 'Device:C', 'Capacitor_SMD:C_0805_2012Metric', '100nF 50V', 'C49678', True),
     Part('C3', 'Device:C', 'Capacitor_SMD:C_1206_3216Metric', '10uF 50V', 'C89632', True),

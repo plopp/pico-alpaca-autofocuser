@@ -83,11 +83,3 @@ def test_assembled_parts_have_lcsc_or_mpn():
 def test_barrel_jack_is_5_5_x_2_1():
     j1 = PARTS['J1']
     assert j1.lcsc == 'C720557' and '5.5x2.1' in j1.value      # XUNPU DC-005-A200: 2.0 mm pin
-
-
-def test_regulator_is_stocked_at_jlcpcb():
-    """U1 is the DEXU K7805-500R3 (LCSC C909662): JLCPCB stocks and assembles it, unlike the
-    RECOM R-78E (global sourcing only). Datasheet: 1 = Vin, 2 = GND, 3 = +Vo, 2.54 mm pitch,
-    6-36 V in - the same pin order as the 7805-style footprint."""
-    u1 = design.PARTS['U1']
-    assert u1.lcsc == 'C909662' and u1.value == 'K7805-500R3'
