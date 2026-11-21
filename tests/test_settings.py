@@ -25,6 +25,7 @@ def test_defaults_when_no_files(tmp_path):
     assert (s['step_pin'], s['dir_pin'], s['en_pin']) == (16, 20, 21)
     assert s['name'] == 'Pico Focuser'
     assert s['hostname'] == 'pico-focuser'
+    assert (s['temp_pin'], s['temp_poll_s']) == (22, 5)
 
 
 def test_config_overrides(tmp_path):

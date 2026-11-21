@@ -39,8 +39,10 @@ The carrier board is generated, not drawn: `hardware/design.py` (all parts + net
 - `pico/main.py` runs at power-up: loads settings, joins Wi-Fi (blinks the LED, retries every 10 s, watchdog reconnects), builds the `Stepper` with real `machine.Pin`/`machine.Timer`, then `asyncio.run`s the Microdot server and the discovery responder together.
 - `pico/stepper.py` – `Stepper` moves one step per **timer tick** toward a target, so HTTP never blocks; `IsMoving`/`Position`/`Halt` work mid-move and a new `move_to` retargets. Pins and timer are injected, which is what lets the same code run under pytest (`tests/conftest.py` `FakePin`/`FakeTimer`, advanced with `tick()`) and in `sim.py` (`ThreadTimer`).
 - `pico/alpaca.py` – `create_app(stepper, settings, unique_id, ip_getter)` holds all routes. Members are two dicts (`get_members` return a Value, `put_members` act); `respond()` applies the Alpaca rules shared by all of them. Add a member by adding a dict entry; add it to `_NO_CONNECTION_NEEDED` only if it must work while disconnected.
+- `pico/control.py` – browser control page (`/setup`) and `/control/*` JSON routes (jog, move, halt, reset position, settings, restart); outside `/api/v1`, so ConformU never sees it. `pico/state.py` – `FocuserState` shared by alpaca.py and control.py (connected flag, transaction ids, sensor, settings path, restart hook).
+- `pico/temperature.py` – `TemperatureSensor` polls the DS18B20 (GP22) from an asyncio task and caches it: never found → Alpaca NotImplemented; no good reading for 60 s → DriverError; rescans every 30 s.
 - `pico/discovery.py` – UDP 32227 responder (`alpacadiscovery1` → `{"AlpacaPort": port}`), polled non-blocking socket.
-- `pico/settings.py` – defaults ← `config.toml` ← Wi-Fi from `secret.toml` (git-ignored; placeholder SSID counts as empty).
+- `pico/settings.py` – defaults ← `config.toml` ← Wi-Fi from `secret.toml` (git-ignored; placeholder SSID counts as empty). `validate_settings`/`save_settings` back the control page (only `[device]` keys are rewritten).
 - `pico/microdot.py`, `pico/toml.py` – vendored, don't edit. `pico/blink.py` – standalone STEP/DIR wiring test.
 
 ## Rules that ConformU / NINA depend on

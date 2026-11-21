@@ -16,6 +16,8 @@ _FIELDS = (
     ('pins', 'step', 'step_pin', 16),
     ('pins', 'dir', 'dir_pin', 20),
     ('pins', 'en', 'en_pin', 21),
+    ('temperature', 'pin', 'temp_pin', 22),
+    ('temperature', 'poll_s', 'temp_poll_s', 5),
 )
 
 _PLACEHOLDER_SSID = 'your-network-name'

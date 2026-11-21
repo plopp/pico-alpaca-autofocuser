@@ -12,7 +12,9 @@ from machine import Pin, Timer
 from alpaca import create_app
 from discovery import run_discovery
 from settings import load_settings
+from state import FocuserState
 from stepper import Stepper
+from temperature import TemperatureSensor
 
 WIFI_RETRY_S = 10
 WIFI_CHECK_S = 30
@@ -54,8 +56,10 @@ async def wifi_watchdog(wlan, settings, led, interval=WIFI_CHECK_S):
             print('[main] Wi-Fi watchdog error:', repr(e))
 
 
-async def serve(app, port, wlan, settings, led):
+async def serve(app, port, wlan, settings, led, sensor=None):
     tasks = [app.start_server(host='0.0.0.0', port=port), run_discovery(port)]
+    if sensor is not None:
+        tasks.append(sensor.poll_forever())
     if wlan is not None:
         tasks.append(wifi_watchdog(wlan, settings, led))
     await asyncio.gather(*tasks)
@@ -69,6 +73,18 @@ def make_stepper(settings):
                    settings['steps_per_sec'], settings['start_position'],
                    settings['max_step'], settings['reverse'],
                    settings['hold_when_idle'])
+
+
+def make_sensor(settings):
+    """DS18B20 on the 3.5 mm jack; None if this firmware has no 1-Wire support."""
+    try:
+        import ds18x20
+        import onewire
+        bus = onewire.OneWire(Pin(settings['temp_pin']))
+        return TemperatureSensor(ds18x20.DS18X20(bus), poll_s=settings['temp_poll_s'])
+    except Exception as e:
+        print('[main] No temperature support:', repr(e))
+        return None
 
 
 def main():
@@ -89,10 +105,13 @@ def main():
         print('[main] No Wi-Fi configured: put ssid/password in secret.toml')
 
     ip = (lambda: wlan.ifconfig()[0]) if wlan else (lambda: '')
-    app = create_app(stepper, settings, unique_id(), ip)
+    sensor = make_sensor(settings)
+    state = FocuserState(settings, sensor=sensor, settings_path='config.toml',
+                         restart=machine.reset)
+    app = create_app(stepper, settings, unique_id(), ip, state=state)
     print('[main] Alpaca focuser on port {}'.format(settings['port']))
     try:
-        asyncio.run(serve(app, settings['port'], wlan, settings, led))
+        asyncio.run(serve(app, settings['port'], wlan, settings, led, sensor))
     except KeyboardInterrupt:            # Ctrl-C from the REPL: stop, don't reset
         stepper.disable()
         raise
