@@ -85,4 +85,4 @@ def test_cpl_uses_part_centres(fab):
     """JLC expects part centres; footprint origins (pin 1) put THT parts 7-24 mm off."""
     rows = {r['Designator']: r for r in _rows(fab / 'focuser-cpl-jlc.csv')}
     assert abs(float(rows['J4']['Mid X']) - (2.72 + 50.98) / 2) < 0.6     # 20-pin socket centre
-    assert abs(float(rows['J4']['Mid Y']) - (50 - 26.78)) < 0.6
+    assert abs(float(rows['J4']['Mid Y']) - (50 - 22.28)) < 0.6     # Pico bottom row y = 22.28

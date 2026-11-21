@@ -43,15 +43,21 @@ def test_usb_and_jack_access_clear(board):
         assert not in_strip, ref
 
 
-def test_right_edge_connectors(board):
+def test_motor_connector_at_right_edge(board):
     x1 = board['outline'][2]
-    for ref in ('J2', 'J3'):
-        assert x1 - fp(board, ref)['courtyard'][2] < 3.0, ref
+    assert x1 - fp(board, 'J2')['courtyard'][2] < 3.0
+
+
+def test_rear_edge_has_usb_power_and_temperature(board):
+    """USB, 12 V and the DS18B20 jack all come out of the same (rear) short edge."""
+    x0 = board['outline'][0]
+    for ref in ('J1', 'J3'):
+        assert fp(board, ref)['courtyard'][0] - x0 < 1.0, ref
 
 
 def test_jack_openings_face_out(board):
     assert board['footprints']['J1']['rotation'] % 360 == 0      # opening faces -x
-    assert board['footprints']['J3']['rotation'] % 360 == 180    # PJ-320D: opening faces +x
+    assert board['footprints']['J3']['rotation'] % 360 == 0      # PJ-320D: opening faces -x
 
 
 def test_barrel_jack_centre_is_positive(board):

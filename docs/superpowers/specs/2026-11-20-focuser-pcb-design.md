@@ -62,10 +62,10 @@ DS18B20 data **GP22** (pin 29), **3V3 OUT** (pin 36), **VSYS** (pin 39), all GND
 
 ## Layout (80 × 50 mm, origin top-left, x along 80 mm)
 
-- **Left short edge (x = 0):** Pico USB connector (Pico's USB end flush with the edge, footprint rotated so the board runs along x) and J1 barrel jack beside it, opening outward.
+- **Left short edge (x = 0, the rear):** Pico USB connector (Pico's USB end flush with the edge, footprint rotated so the board runs along x), then J1 barrel jack and J3 3.5 mm jack below it, both opening outward (user change: the temperature jack comes out of the rear with USB and power).
 - Pico occupies roughly x 0–52, along one long edge; U1 regulator and power parts near J1.
 - TMC2209 socket to the right of the Pico; C1 within ~10 mm of VM.
-- **Right short edge (x = 80):** J2 motor connector and J3 3.5 mm jack, cables leaving away from power/USB.
+- **Right short edge (x = 80):** J2 motor connector, cable leaving away from power/USB.
 - **No mounting holes** (user change): the board slides into slots in the case along its long edges, so no parts within 2.5 mm of either long edge.
 - Ground pour on both layers; +12V and motor traces ≥ 1.0 mm; signal traces 0.25 mm; JLCPCB 2-layer rules (≥ 0.127 mm clearance/track, ≥ 0.3 mm drill).
 - Silkscreen: board name/version, pin labels for J1/J2/J3, socket outlines labelled "Pico 2 W" / "TMC2209 (EN pin here)", orientation marks so neither module can be plugged in backwards unnoticed.

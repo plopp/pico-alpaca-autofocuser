@@ -33,7 +33,7 @@ Everything to upload is in `fab/`:
 |---|---|
 | **J1** 12 V barrel jack | 5.5 × 2.1 mm plug, **centre positive**, 12 V. The jack (XUNPU DC-005-A200) is rated 0.5 A, which is enough for a focuser at modest motor current. |
 | **J2** motor (JST XH 4-pin) | 1 = A1, 2 = A2, 3 = B1, 4 = B2. **A1/A2 must be one coil, B1/B2 the other.** Check with a multimeter: a few ohms within a coil, open circuit between coils. |
-| **J3** 3.5 mm jack, DS18B20 | Tip = data (GP22, 4.7 kΩ pull-up on the board), Ring = 3.3 V (through 100 Ω), Sleeve = GND. Use a 3-pole (TRS) plug. |
+| **J3** 3.5 mm jack, DS18B20 (rear edge, below the 12 V jack) | Tip = data (GP22, 4.7 kΩ pull-up on the board), Ring = 3.3 V (through 100 Ω), Sleeve = GND. Use a 3-pole (TRS) plug. |
 | USB | The Pico's own USB port, next to J1, for flashing. USB and 12 V can be connected at the same time. |
 
 **Plugging in the modules**

@@ -20,7 +20,7 @@ PITCH = 2.54
 
 # Pico: socket pin 1 sits 2.72 mm from the USB connector face (Module:RaspberryPi_Pico_Common_THT)
 PICO_X = 2.72
-PICO_TOP_ROW_Y = 9.0                      # J5: Pico pins 40..21
+PICO_TOP_ROW_Y = 4.5                      # J5: Pico pins 40..21 (courtyard just clear of the slot strip)
 PICO_BOTTOM_ROW_Y = PICO_TOP_ROW_Y + 17.78  # J4: Pico pins 1..20
 PICO_OUTLINE = (0.0, PICO_TOP_ROW_Y - 1.61, PICO_X + 19 * PITCH + 1.13, PICO_BOTTOM_ROW_Y + 1.61)
 
@@ -42,11 +42,12 @@ PLACEMENT = {
     'J4': (PICO_X, PICO_BOTTOM_ROW_Y, 90),
     'J7': (TMC_POWER_X, TMC_PIN1_Y, 180),   # VM..GND, pin 1 (VM) at the bottom
     'J6': (TMC_LOGIC_X, TMC_PIN1_Y, 180),   # EN..DIR, pin 1 (EN) at the bottom
-    'J1': (14.2, 33.5, 0),             # DC-005, opening faces -x (left edge)
+    # Rear (left) edge, top to bottom: Pico USB, 12 V jack, DS18B20 jack
+    'J1': (14.2, 29.2, 0),             # DC-005, opening faces -x
+    'J3': (8.9, 40.5, 0),              # PJ-320D 3.5 mm jack, opening faces -x
     'J2': (69.0, 27.5, 0),             # motor, right edge below the driver, cable up
-    'J3': (71.1, 38.0, 180),           # PJ-320D 3.5 mm jack, opening faces +x (right edge)
-    'F1': (21.0, 31.0, 0),
-    'D1': (28.0, 31.0, 0),
+    'F1': (23.5, 31.0, 0),
+    'D1': (30.5, 31.0, 0),
     'U1': (21.0, 41.0, 0),
     'C3': (33.5, 37.5, 0),
     'C4': (33.5, 41.5, 0),
@@ -57,23 +58,23 @@ PLACEMENT = {
     'R1': (72.0, 21.0, 0),             # EN pull-up, under the module
     'JP1': (46.0, 31.5, 0),
     'JP2': (46.0, 35.0, 0),
-    'R2': (58.0, 44.0, 0),
-    'R3': (62.0, 44.0, 0),
+    'R2': (19.0, 45.6, 0),             # DS18B20 pull-up and supply resistor, near J3
+    'R3': (23.0, 45.6, 0),
 }
 
 # Descriptive silkscreen replaces these designators (they would overlap the labels)
-HIDDEN_REFS = ('J2', 'J4', 'J5', 'J6', 'J7')
+HIDDEN_REFS = ('J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7')
 
 SILK = [  # text, x, y, size, rotation
     ('USB', 3.5, (PICO_OUTLINE[1] + PICO_OUTLINE[3]) / 2, 1.2, 90),
-    ('Pico 2 W', 27.0, 17.9, 1.5, 0),
+    ('Pico 2 W', 27.0, (PICO_OUTLINE[1] + PICO_OUTLINE[3]) / 2, 1.5, 0),
     ('TMC2209', (TMC_POWER_X + TMC_LOGIC_X) / 2, 13.5, 1.2, 90),
     ('EN', TMC_LOGIC_X - 2.6, TMC_PIN1_Y, 0.8, 0),
     ('VM', TMC_POWER_X - 2.6, TMC_PIN1_Y, 0.8, 0),
-    ('12V (+) centre', 8.5, 42.5, 1.0, 0),
+    ('12V (+) centre', 17.6, 29.5, 0.8, 90),
     ('A1', 69.0, 32.3, 0.8, 0), ('A2', 71.5, 32.3, 0.8, 0),
     ('B1', 74.0, 32.3, 0.8, 0), ('B2', 76.5, 32.3, 0.8, 0),
-    ('T=DATA R=3V3 S=GND', 71.5, 45.0, 0.8, 0),
+    ('T=DATA R=3V3 S=GND', 7.6, 46.6, 0.8, 0),
     ('MS1/MS2 open = 1/8', 46.0, 37.8, 0.8, 0),
     ('Pico Alpaca Focuser v1.0', 30.0, 48.0, 1.2, 0),
 ]
@@ -105,9 +106,11 @@ def add_text(board, text, x, y, size, rotation):
 
 
 # Ground stitching vias tie the top and bottom pours together (no isolated pour islands)
-STITCH_VIAS = ([(x, 3.2) for x in (8, 16, 24, 32, 40, 48, 56)]
-               + [(x, 46.8) for x in (8, 16, 24, 32, 40, 48, 56, 64)]
-               + [(x, 15.0) for x in (10, 20, 30, 40)] + [(x, 21.0) for x in (15, 25, 35)])
+# (none along the top edge under the Pico, whose top socket row now sits there)
+STITCH_VIAS = ([(x, 3.2) for x in (56, 60)]
+               + [(x, 46.8) for x in (16, 32, 40, 48, 56, 64)]
+               + [(x, PICO_TOP_ROW_Y + 6.0) for x in (10, 20, 30, 40)]
+               + [(x, PICO_TOP_ROW_Y + 12.0) for x in (15, 25, 35)])
 
 
 def add_via(board, net, pos):
