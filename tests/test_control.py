@@ -163,3 +163,29 @@ def test_control_page_loads(client, path):
     assert status == 200
     for word in ('Jog', 'Move', 'Reset', 'Halt', 'Settings', '/control/status'):
         assert word in body, word
+
+
+def test_nina_connecting_during_manual_move_keeps_hold(client):
+    client.post('/control/move', {'position': '50010'})
+    client.timer.tick(3)
+    client.connect()
+    client.timer.tick(20)
+    assert client.en.value() == 0
+
+
+def test_device_name_is_escaped_in_page(client):
+    client.state.settings['name'] = '</title><script>x()</script>@JOG@'
+    body = client.get('/setup')[1]
+    assert '<script>x()' not in body
+    assert '&lt;/title&gt;' in body
+    assert body.count('onclick="jog(') == 6          # @JOG@ in the name isn't expanded
+
+
+def test_restart_stops_the_motor_first(client):
+    import time
+    client.connect()
+    client.post('/control/move', {'position': '50100'})
+    client.timer.tick(3)
+    assert client.post('/control/restart')[0] == 200
+    assert client.stepper.is_moving is False
+    assert client.en.value() == 1                     # driver off before the reset

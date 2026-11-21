@@ -115,7 +115,7 @@ def save_settings(path, values):
         if key in pending:
             comment = line[line.index('#'):] if '#' in line.split('=', 1)[1] else ''
             text = '{} = {}'.format(key, _toml_value(pending.pop(key)))
-            lines[i] = (text.ljust(27) + comment) if comment else text
+            lines[i] = ('{:<27}'.format(text) + comment) if comment else text   # no ljust on MicroPython
     new_lines = ['{} = {}'.format(k, _toml_value(v)) for k, v in pending.items()]
     if new_lines:
         if device_header is None:

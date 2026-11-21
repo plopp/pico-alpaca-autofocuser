@@ -187,3 +187,21 @@ def test_normal_move_after_release_move_keeps_hold():
     s.move_to(50004)
     timer.tick(5)
     assert en.value() == 0             # normal hold policy again
+
+
+def test_hold_cancels_release_when_client_connects():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.move_to(50010, release=True)          # manual jog, no client
+    timer.tick(3)
+    s.hold()                                # NINA connects mid-jog
+    timer.tick(20)
+    assert s.position == 50010
+    assert en.value() == 0 and s.enabled    # normal hold policy now
+
+
+def test_release_not_armed_without_a_move():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.enable()
+    s.move_to(50000, release=True)          # already there: nothing to do
+    s.halt()
+    assert en.value() == 0 and s.enabled

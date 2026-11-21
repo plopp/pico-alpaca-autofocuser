@@ -98,7 +98,7 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: '', state=None):
 
     def set_connected(value):
         if value:
-            stepper.enable()
+            stepper.hold()
         else:
             stepper.disable()
         state.connected = value

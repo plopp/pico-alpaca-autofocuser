@@ -27,6 +27,11 @@ def _int_field(form, name):
     return int(raw)
 
 
+def _escape(text):
+    return (str(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            .replace('"', '&quot;'))
+
+
 async def _later(fn, delay=0.5):
     await asyncio.sleep(delay)
     fn()
@@ -112,15 +117,16 @@ def add_routes(app, stepper, state, ip_getter):
     async def post_restart(req):
         if state.restart is None:
             return 'restart is not available here', 400
+        stepper.disable()                               # stop and de-energize first
         asyncio.create_task(_later(state.restart))      # answer first, then restart
         return {'restarting': True}
 
     def page():
-        html = (PAGE.replace('@NAME@', settings['name'])
-                .replace('@POSITION@', str(stepper.position))
+        html = (PAGE.replace('@POSITION@', str(stepper.position))
                 .replace('@START@', str(settings['start_position']))
                 .replace('@JOG@', ''.join('<button onclick="jog({0})">{0:+d}</button>'.format(n)
-                                          for n in JOG_STEPS)))
+                                          for n in JOG_STEPS))
+                .replace('@NAME@', _escape(settings['name'])))      # last: never expanded
         return html, 200, {'Content-Type': 'text/html; charset=utf-8'}
 
     @app.get('/setup')

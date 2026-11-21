@@ -48,7 +48,7 @@ class TemperatureSensor:
         self._last_scan = now
         try:
             self._roms = list(self._ds.scan())
-        except OSError:
+        except Exception:            # onewire.OneWireError is not an OSError
             self._roms = []
         if self._roms:
             self.available = True
@@ -62,14 +62,14 @@ class TemperatureSensor:
             return False
         try:
             self._ds.convert_temp()
-        except OSError:
+        except Exception:            # unplugged: OneWireError (no presence pulse)
             return False
         return True
 
     def _finish(self):
         try:
             value = self._ds.read_temp(self._roms[0])
-        except (OSError, IndexError):
+        except Exception:            # CRC error, unplugged, different sensor
             return
         if value is None or value == POWER_ON_VALUE or value < -55 or value > 125:
             return
@@ -83,9 +83,12 @@ class TemperatureSensor:
 
     async def poll_forever(self):
         while True:
-            if self._start():
-                await asyncio.sleep(CONVERSION_S)
-                self._finish()
+            try:
+                if self._start():
+                    await asyncio.sleep(CONVERSION_S)
+                    self._finish()
+            except Exception as e:   # a sensor problem must never stop the server
+                print('[temperature] poll error:', repr(e))
             await asyncio.sleep(self.poll_s)
 
     def read(self):

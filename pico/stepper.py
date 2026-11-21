@@ -44,6 +44,11 @@ class Stepper:
         self._en.value(0)
         self._enabled = True
 
+    def hold(self):
+        """A client took over: power the driver and cancel any pending switch-off."""
+        self.enable()
+        self._release = False
+
     def disable(self):
         self.halt()
         self._en.value(1)
@@ -70,7 +75,8 @@ class Stepper:
         (used for manual moves while no client holds the focuser)."""
         if target < 0 or target > self._max_step:
             raise ValueError('target out of range')
-        self._release = release
+        # Arm the switch-off only for a move that actually happens
+        self._release = release and (self._running or target != self._position)
         self._target = target
         if not self._running and target != self._position:
             if not self._enabled:       # hold_when_idle=False switched it off

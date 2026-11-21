@@ -5,8 +5,13 @@ from temperature import TemperatureSensor, TemperatureStale, TemperatureUnavaila
 ROM = b'\x28\x01\x02\x03\x04\x05\x06\x07'
 
 
+class FakeOneWireError(Exception):
+    """MicroPython's onewire.OneWireError derives from Exception, NOT OSError (checked on
+    the Pico); ds18x20.read_scratch raises a plain Exception('CRC error')."""
+
+
 class FakeDS:
-    """Stands in for MicroPython's ds18x20.DS18X20."""
+    """Stands in for MicroPython's ds18x20.DS18X20, raising what the real driver raises."""
 
     def __init__(self, roms=(), temp=12.5):
         self.roms = list(roms)
@@ -18,11 +23,11 @@ class FakeDS:
 
     def convert_temp(self):
         if self.fail:
-            raise OSError('no presence pulse')
+            raise FakeOneWireError()
 
     def read_temp(self, rom):
         if self.fail or rom not in self.roms:
-            raise OSError('CRC error')
+            raise Exception('CRC error')
         return self.temp
 
 
@@ -102,3 +107,23 @@ def test_crc_error_keeps_previous_value():
     clock.t += 5
     sensor.poll_once()
     assert sensor.read() == 12.5
+
+
+def test_poll_forever_survives_unexpected_errors():
+    """A sensor problem must never stop the poll loop (and with it the whole server)."""
+    import asyncio
+
+    class Exploding(FakeDS):
+        calls = 0
+
+        def scan(self):
+            Exploding.calls += 1
+            if Exploding.calls == 1:
+                raise RuntimeError('bus glitch')
+            raise KeyboardInterrupt          # ends the test loop
+
+    sensor = TemperatureSensor(Exploding([ROM]), clock=Clock(), poll_s=0)
+    sensor._rescan_s = 0
+    with pytest.raises(KeyboardInterrupt):
+        asyncio.run(sensor.poll_forever())
+    assert Exploding.calls == 2
