@@ -14,15 +14,16 @@ Everything to upload is in `fab/`:
 2. **Assembly:** turn on *PCB Assembly*, **top side**. The sockets, barrel jack, motor
    connector and U1 are through-hole, so make sure through-hole assembly is included.
 3. Upload **`focuser-bom-jlc.csv`** (BOM) and **`focuser-cpl-jlc.csv`** (pick and place).
-4. **U1 (RECOM R-78E5.0-0.5)** has no LCSC part number. In the BOM step either:
-   - choose **Global Sourcing** for it (JLCPCB buys it in by its MPN), or
-   - mark it *do not place* and solder it yourself. It has 3 through-hole pins; pin 1 = VIN goes in the square pad (match the silkscreen).
-   Any 7805-pinout 5 V switching module with at least 15 V input and at least 0.5 A works:
-   RECOM R-78E5.0-0.5/1.0, Mornsun K7805-500R3/1000R3, Traco TSR 1-2450.
+4. **U1** is a DEXU **K7805-500R3** switching 5 V module (LCSC C909662). JLCPCB stocks and
+   assembles it, so no Global Sourcing is needed. It is an Extended part, which adds JLCPCB's
+   small one-off fee. Any 7805-pinout 5 V switching module with at least 15 V input and at least
+   0.5 A fits the same holes (pin 1 = VIN in the square pad): Mornsun K7805-500R3/1000R3,
+   RECOM R-78E5.0-0.5/1.0, Traco TSR 1-2450.
 5. **Check the placement preview before paying.** JLCPCB's parts don't always share KiCad's
    zero rotation. Look especially at:
    - the **polarity** of D1/D2 (stripe = cathode) and C1 (+)
-   - that **J1** and **J3** face outwards at the board edges
+   - that **J1** and **J3** face outwards at the rear edge
+   - that **U1** sits over its outline with pin 1 in the square pad
 
    Fix rotations in the preview if needed.
 6. Solder jumpers JP1/JP2 are pads only; nothing is placed on them.
