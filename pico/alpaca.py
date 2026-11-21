@@ -9,6 +9,10 @@ import time
 
 from microdot import Microdot
 
+import control
+from state import FocuserState
+from temperature import TemperatureStale, TemperatureUnavailable
+
 NOT_IMPLEMENTED = 0x400
 INVALID_VALUE = 0x401
 NOT_CONNECTED = 0x407
@@ -84,20 +88,20 @@ class _Params:
         return int(value)
 
 
-def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
+def create_app(stepper, settings, unique_id, ip_getter=lambda: '', state=None):
     app = Microdot()
-    state = {'connected': False, 'server_txn': 0}
+    state = state or FocuserState(settings)
 
     def require_connected():
-        if not state['connected']:
+        if not state.connected:
             raise AlpacaError(NOT_CONNECTED, 'Focuser is not connected')
 
     def set_connected(value):
         if value:
-            stepper.enable()
+            stepper.hold()
         else:
             stepper.disable()
-        state['connected'] = value
+        state.connected = value
 
     # ---- GET members: return the Value ----
     def not_implemented(name):
@@ -105,8 +109,28 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
             raise AlpacaError(NOT_IMPLEMENTED, '{} is not implemented'.format(name))
         return handler
 
+    def get_temperature(p):
+        if state.sensor is None:
+            raise AlpacaError(NOT_IMPLEMENTED, 'No temperature sensor')
+        try:
+            return state.sensor.read()
+        except TemperatureUnavailable as e:
+            raise AlpacaError(NOT_IMPLEMENTED, str(e))
+        except TemperatureStale as e:
+            raise AlpacaError(DRIVER_ERROR, str(e))
+
+    def device_state(p):
+        items = [{'Name': 'IsMoving', 'Value': stepper.is_moving},
+                 {'Name': 'Position', 'Value': stepper.position}]
+        try:
+            items.append({'Name': 'Temperature', 'Value': state.sensor.read()})
+        except Exception:
+            pass                        # no sensor or no fresh reading: leave it out
+        items.append({'Name': 'TimeStamp', 'Value': utc_iso()})
+        return items
+
     get_members = {
-        'connected': lambda p: state['connected'],
+        'connected': lambda p: state.connected,
         'connecting': lambda p: False,
         'name': lambda p: settings['name'],
         'description': lambda p: DESCRIPTION,
@@ -122,12 +146,8 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
         'stepsize': not_implemented('StepSize'),
         'tempcompavailable': lambda p: False,
         'tempcomp': lambda p: False,
-        'temperature': not_implemented('Temperature'),
-        'devicestate': lambda p: [
-            {'Name': 'IsMoving', 'Value': stepper.is_moving},
-            {'Name': 'Position', 'Value': stepper.position},
-            {'Name': 'TimeStamp', 'Value': utc_iso()},
-        ],
+        'temperature': get_temperature,
+        'devicestate': device_state,
     }
 
     # ---- PUT members: act, return nothing ----
@@ -179,9 +199,8 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
             client_txn = p.uint('ClientTransactionID')
         except BadRequest as e:
             return str(e), 400
-        state['server_txn'] += 1
         body = {'ClientTransactionID': client_txn,
-                'ServerTransactionID': state['server_txn'],
+                'ServerTransactionID': state.next_txn(),
                 'ErrorNumber': 0, 'ErrorMessage': ''}
         try:
             if member not in _NO_CONNECTION_NEEDED:
@@ -213,9 +232,8 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
             client_txn = _Params(req).uint('ClientTransactionID')
         except BadRequest as e:
             return str(e), 400
-        state['server_txn'] += 1
         return {'Value': value, 'ClientTransactionID': client_txn,
-                'ServerTransactionID': state['server_txn'],
+                'ServerTransactionID': state.next_txn(),
                 'ErrorNumber': 0, 'ErrorMessage': ''}
 
     @app.get('/management/apiversions')
@@ -236,27 +254,7 @@ def create_app(stepper, settings, unique_id, ip_getter=lambda: ''):
                                  'DeviceNumber': 0,
                                  'UniqueID': unique_id}])
 
-    # ---- Setup pages (status only; settings live in config.toml) ----
-    def setup_page():
-        rows = (('Position', stepper.position),
-                ('Moving', stepper.is_moving),
-                ('Connected', state['connected']),
-                ('Max step', settings['max_step']),
-                ('Steps per second', settings['steps_per_sec']),
-                ('IP address', ip_getter()))
-        cells = ''.join('<tr><th>{}</th><td>{}</td></tr>'.format(k, v) for k, v in rows)
-        html = ('<!DOCTYPE html><html><head><meta charset="utf-8"><title>{0}</title></head>'
-                '<body><h1>{0}</h1><table>{1}</table>'
-                '<p>Settings are in config.toml on the Pico.</p></body></html>'
-                ).format(settings['name'], cells)
-        return html, 200, {'Content-Type': 'text/html; charset=utf-8'}
-
-    @app.get('/setup')
-    async def server_setup(req):
-        return setup_page()
-
-    @app.get('/setup/v1/focuser/<int:devnum>/setup')
-    async def device_setup(req, devnum):
-        return setup_page()
+    # ---- Control page (also the Alpaca setup pages) ----
+    control.add_routes(app, stepper, state, ip_getter)
 
     return app

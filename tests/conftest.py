@@ -62,11 +62,14 @@ UNIQUE_ID = '01234567-89ab-cdef-0123-456789abcdef'
 
 
 class Client:
-    def __init__(self, port, stepper, timer, en):
+    def __init__(self, port, stepper, timer, en, state=None, config=None, restarts=None):
         self.base = f'http://127.0.0.1:{port}'
         self.stepper = stepper
         self.timer = timer
         self.en = en
+        self.state = state
+        self.config = config
+        self.restarts = restarts
 
     def _send(self, req):
         try:
@@ -85,6 +88,12 @@ class Client:
     def put(self, path, data=None):
         body = urllib.parse.urlencode(data or {}).encode()
         req = urllib.request.Request(self.base + path, data=body, method='PUT')
+        req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+        return self._send(req)
+
+    def post(self, path, data=None):
+        body = urllib.parse.urlencode(data or {}).encode()
+        req = urllib.request.Request(self.base + path, data=body, method='POST')
         req.add_header('Content-Type', 'application/x-www-form-urlencoded')
         return self._send(req)
 
@@ -109,7 +118,12 @@ def client(tmp_path):
     stepper = Stepper(FakePin(), FakePin(), en, timer, settings['steps_per_sec'],
                       settings['start_position'], settings['max_step'],
                       settings['reverse'], settings['hold_when_idle'])
-    app = create_app(stepper, settings, UNIQUE_ID, lambda: '127.0.0.1')
+    from state import FocuserState
+    config = tmp_path / 'config.toml'
+    config.write_text('[device]\nname = "Pico Focuser"\n')
+    restarts = []
+    state = FocuserState(settings, settings_path=str(config), restart=lambda: restarts.append(1))
+    app = create_app(stepper, settings, UNIQUE_ID, lambda: '127.0.0.1', state=state)
     port = _free_port()
     loop_box = {}
 
@@ -128,6 +142,6 @@ def client(tmp_path):
             break
         except OSError:
             time.sleep(0.02)
-    yield Client(port, stepper, timer, en)
+    yield Client(port, stepper, timer, en, state, config, restarts)
     loop_box['loop'].call_soon_threadsafe(app.shutdown)
     thread.join(timeout=5)

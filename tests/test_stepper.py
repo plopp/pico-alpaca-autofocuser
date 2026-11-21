@@ -120,3 +120,88 @@ def test_hold_when_idle_false_reenables_for_next_move():
     timer.tick(20)
     assert s.position == 50010
     assert en.value() == 1           # and off again after arriving
+
+
+def test_set_position():
+    s, step, dirp, en, timer = make()
+    s.set_position(1234)
+    assert (s.position, s.target) == (1234, 1234)
+    assert step.history == [] and timer.running is False
+
+
+def test_set_position_refused_while_moving():
+    s, step, dirp, en, timer = make()
+    s.move_to(50010)
+    timer.tick(2)
+    with pytest.raises(ValueError):
+        s.set_position(50000)
+    assert s.position == 50002
+
+
+@pytest.mark.parametrize('bad', [-1, 100001])
+def test_set_position_out_of_range(bad):
+    s, *_ = make()
+    with pytest.raises(ValueError):
+        s.set_position(bad)
+
+
+def test_configure_changes_speed_and_direction():
+    s, step, dirp, en, timer = make()
+    s.configure(steps_per_sec=400, reverse=True, hold_when_idle=True)
+    s.move_to(50001)
+    assert timer.freq == 400
+    timer.tick()
+    assert dirp.value() == 0           # moving up, reversed
+
+
+def test_configure_refused_while_moving():
+    s, step, dirp, en, timer = make()
+    s.move_to(50010)
+    with pytest.raises(ValueError):
+        s.configure(steps_per_sec=400, reverse=False, hold_when_idle=True)
+
+
+def test_move_with_release_disables_on_arrival():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    assert s.enabled is False
+    s.move_to(50003, release=True)
+    assert en.value() == 0             # energized for the move
+    timer.tick(10)
+    assert s.position == 50003
+    assert en.value() == 1 and s.enabled is False
+
+
+def test_halt_after_release_move_disables():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.move_to(50010, release=True)
+    timer.tick(3)
+    s.halt()
+    assert en.value() == 1 and s.enabled is False
+
+
+def test_normal_move_after_release_move_keeps_hold():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.move_to(50002, release=True)
+    timer.tick(5)
+    s.enable()
+    s.move_to(50004)
+    timer.tick(5)
+    assert en.value() == 0             # normal hold policy again
+
+
+def test_hold_cancels_release_when_client_connects():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.move_to(50010, release=True)          # manual jog, no client
+    timer.tick(3)
+    s.hold()                                # NINA connects mid-jog
+    timer.tick(20)
+    assert s.position == 50010
+    assert en.value() == 0 and s.enabled    # normal hold policy now
+
+
+def test_release_not_armed_without_a_move():
+    s, step, dirp, en, timer = make(hold_when_idle=True)
+    s.enable()
+    s.move_to(50000, release=True)          # already there: nothing to do
+    s.halt()
+    assert en.value() == 0 and s.enabled

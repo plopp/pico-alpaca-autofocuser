@@ -18,3 +18,7 @@ hold_when_idle = true      # Keep the driver enabled between moves while connect
 step = 16
 dir = 20
 en = 21                    # Active low
+
+[temperature]
+pin = 22                   # DS18B20 data (3.5 mm jack tip on the carrier board)
+poll_s = 5                 # Seconds between readings

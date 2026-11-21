@@ -45,6 +45,39 @@ the same subnet as the Pico; otherwise add it manually by IP address, port 5555.
 **Position:** the focuser has no encoder. Every power-up it reports the middle of the
 range (50000 of 0–100000 by default), so set focus roughly by hand before powering on.
 
+## Control page
+
+Open `http://<pico-ip>:5555/setup` in a browser (phone or laptop). You can:
+- see the live position and temperature
+- jog ±10 / 100 / 1000 steps, move to a position, or halt
+- reset the position to the start value (50000) without moving
+- change the basic settings: name, range, start position, speed, direction, hold when idle
+
+Speed, direction and hold take effect at once; the others after **Restart**. Wi-Fi, port and
+pins can only be changed in the files on the Pico. Without NINA connected, a manual move powers
+the motor only for the move. While NINA is connected the page warns you that moves will disturb
+autofocus.
+
+## Temperature (DS18B20) and refocusing
+
+The focuser reports `Temperature` to NINA from a DS18B20 on GP22 (the 3.5 mm jack on the
+carrier board). In NINA's Advanced Sequencer, add the trigger **"Autofocus after temperature
+change"**, for example 1 °C. The focuser only measures; NINA decides when to refocus.
+
+A **Shelly DS18B20** probe works directly. Fit a 3-pole (TRS) 3.5 mm plug:
+
+| Shelly wire | 3.5 mm plug |
+|---|---|
+| yellow (data) | tip |
+| red (VCC) | ring (3.3 V from the board) |
+| black (GND) | sleeve |
+
+Check the colours against the label or documentation of your probe before plugging in. On a
+breadboard, add a 4.7 kΩ resistor from data to 3.3 V.
+
+With no sensor plugged in, `Temperature` reports "not implemented" and NINA's trigger simply
+won't fire. A sensor plugged in later is found within 30 s.
+
 ## Development
 
 ```bash
