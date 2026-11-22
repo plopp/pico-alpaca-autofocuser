@@ -65,7 +65,7 @@ underneath. Motor connector J2 (JST XH, vertical) at the front-right corner.
 
 | | Layout | Trade-off |
 |---|---|---|
-| **Chosen** | **1. In line:** motor at the front, board flat behind it, rear wall = board's rear edge | Long, narrow box (about 145 × 56 × 50 mm with room for a 48 mm motor) along the tube; belt at the front where the ring is, cables at the rear. |
+| **Chosen** | **1. In line:** motor at the front, board flat behind it, rear wall = board's rear edge | Long, narrow box (about 141 × 55 × 63 mm with room for a 48 mm motor and its connector) along the tube; belt at the front where the ring is, cables at the rear. |
 | | 2. Stacked: board under the motor | Shorter (about 90 mm) but about 100 mm tall; sticks out more beside the lens. |
 
 The user agreed to A + 1 (2026-11-22).
@@ -127,3 +127,10 @@ print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
   the 200 mm Arca-Swiss plate from the OpenAstroExplorer clamp kit: two long slots, each with
   a captive 1/4"-20 screw coming up from below, and raised rubber pads (so the case bottom
   stays flat apart from the ridge, and the 2 mm ridge stays above the screw head).
+
+## Changes made while planning (2026-11-22)
+
+- **Height about 63 mm, not 50:** the motor's cable connector faces up and needs about 10 mm
+  above the motor, and the embedded nut needs about 8 mm of floor under the motor.
+- **The ridge is a separate printed key glued into a 1 mm groove** (2 mm ridge left): with the
+  ridge printed on, the body's floor could not lie flat on the print bed.
