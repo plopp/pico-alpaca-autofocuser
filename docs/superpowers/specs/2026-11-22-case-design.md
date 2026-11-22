@@ -39,7 +39,8 @@ With a ring of about 64 mm, the motor shaft ends up about 77 mm from the tube ax
 synchronizer ring behind the front section.
 
 **Motor:** NEMA 17, 42.3 mm square, 4 × M3 holes on a 31 mm square, Ø22 × 2 mm boss,
-Ø5 mm shaft. Body length is a parameter (default 40 mm; 34–48 mm must fit). The motor's own
+Ø5 mm shaft. The case fits bodies up to 48 mm long (user: any NEMA 17 up to 48 mm); a
+shorter motor just leaves more room behind it for the cable. The motor's own
 connector (6-pin JST PH) sits on one side near its rear.
 
 **Board** (`hardware/gen_board.py`, v1.0): 80 × 50 × 1.6 mm, slides in slots along its long
@@ -64,7 +65,7 @@ underneath. Motor connector J2 (JST XH, vertical) at the front-right corner.
 
 | | Layout | Trade-off |
 |---|---|---|
-| **Chosen** | **1. In line:** motor at the front, board flat behind it, rear wall = board's rear edge | Long, narrow box (about 136 × 56 × 50 mm) along the tube; belt at the front where the ring is, cables at the rear. |
+| **Chosen** | **1. In line:** motor at the front, board flat behind it, rear wall = board's rear edge | Long, narrow box (about 145 × 56 × 50 mm with room for a 48 mm motor) along the tube; belt at the front where the ring is, cables at the rear. |
 | | 2. Stacked: board under the motor | Shorter (about 90 mm) but about 100 mm tall; sticks out more beside the lens. |
 
 The user agreed to A + 1 (2026-11-22).
@@ -107,7 +108,7 @@ orientation) and `*.step`; pytest checks in `tests/case/`.
 
 ## Parameters (top of the script)
 
-Motor body length, bracket slot width, wall thickness (2 mm rear wall fixed by the board),
+Maximum motor body length (48 mm), bracket slot width, wall thickness (2 mm rear wall fixed by the board),
 print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
 
 ## Left to the builder
@@ -122,6 +123,7 @@ print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
 
 ## Still to confirm with the user
 
-- Bracket slot width (for the ridge). The bracket is an Arca-Swiss plate from the
-  OpenAstroExplorer clamp kit (usually about 10 mm thick, slot about 6.5–7 mm).
-- Motor body length (default 40 mm).
+- Bracket slot width, to fit the ridge closer than the safe 6.0 mm default. The bracket is
+  the 200 mm Arca-Swiss plate from the OpenAstroExplorer clamp kit: two long slots, each with
+  a captive 1/4"-20 screw coming up from below, and raised rubber pads (so the case bottom
+  stays flat apart from the ridge, and the 2 mm ridge stays above the screw head).
