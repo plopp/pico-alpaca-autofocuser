@@ -213,3 +213,4 @@ secret.toml
 *.kicad_prl
 hardware/kicad/*-backups/
 fp-info-cache
+case/out/
