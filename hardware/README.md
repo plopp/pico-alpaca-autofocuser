@@ -45,7 +45,17 @@ Everything to upload is in `fab/`:
   focuser needs little torque: start low.
 
 **Microstepping:** JP1/JP2 open (default) = 1/8 step, which is what the firmware assumes.
-Bridging them with solder changes MS1/MS2. See the TMC2209 datasheet, and update `max_step` in `config.toml`.
+Bridging a jumper ties MS1 (JP1) or MS2 (JP2) to 3.3 V (BTT TMC2209 v1.3 table):
+
+| JP1 (MS1) | JP2 (MS2) | Microsteps | Steps per motor turn |
+|---|---|---|---|
+| open | open | 8 (default) | 1600 |
+| bridged | open | 2 | 400 |
+| open | bridged | 4 | 800 |
+| bridged | bridged | 16 | 3200 |
+
+After changing it, scale `max_step`, `start_position` and `steps_per_sec` to match (on the
+control page, or in `config.toml`).
 
 **Wi-Fi:** the Pico's antenna end (opposite USB) has no copper under it (datasheet keep-out,
 14 × 9 mm) and the driver sits more than 10 mm away. Don't put metal near that end in the case.
