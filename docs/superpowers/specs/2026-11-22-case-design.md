@@ -91,12 +91,13 @@ The user agreed to A + 1 (2026-11-22).
 (clears the through-hole pins). They stop at the rear wall.
 
 **Bottom:**
-- 1/4"-20 brass heat-set insert in a boss, for the camera screw. The boss needs about 8–10 mm
-  of height, which the 5 mm under the board does not have: it goes where nothing sits above
-  the floor, behind the motor (between motor and board). Fallback if the insert is hard to
-  fit: a captive 1/4"-20 hex nut (11.1 mm across flats) in a pocket.
+- 1/4"-20 hex nut (7/16" = 11.1 mm across flats, about 5.6 mm thick) embedded in the floor:
+  the print pauses at the top of its pocket, the nut is dropped in and printed over (user:
+  no access to the nut is needed). The camera screw comes up through the bracket slot. The
+  boss needs about 8 mm of height, which the 5 mm under the board does not have, so it sits
+  behind the motor (between motor and board). The STL comes with the pause height stated.
 - Ridge running across the case (perpendicular to the tube, along the bracket slot) through
-  the insert. Width is a parameter: the user measures the slot. Default 6.0 mm, 2 mm high.
+  the nut. Width is a parameter: the user measures the slot. Default 6.0 mm, 2 mm high.
 
 **Inside:** room behind the motor for its cable (motor connector to J2); no part of the case
 over the antenna end other than plastic.
@@ -107,19 +108,20 @@ orientation) and `*.step`; pytest checks in `tests/case/`.
 ## Parameters (top of the script)
 
 Motor body length, bracket slot width, wall thickness (2 mm rear wall fixed by the board),
-print clearance (default 0.3 mm), insert sizes (M3 and 1/4"-20).
+print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
 
 ## Left to the builder
 
 - Exact component heights and outlines for the rear holes: from the DC-005 / PJ-320D
   datasheets and the KiCad 3D models; the Pico USB height from the Pico datasheet.
 - Screw count and placement, fillets, print orientation, vent pattern.
-- Exact position of the camera insert in the space behind the motor (balance: the motor is
+- Exact position of the camera nut in the space behind the motor (balance: the motor is
   the heaviest part).
 - Potentiometer access: the BTT module's pot is at its VM end, which on the board is the
   end nearest the motor connector (`TMC_PIN1_Y` in `gen_board.py`).
 
 ## Still to confirm with the user
 
-- Bracket slot width (for the ridge), and the bracket's thickness (ridge height).
+- Bracket slot width (for the ridge). The bracket is an Arca-Swiss plate from the
+  OpenAstroExplorer clamp kit (usually about 10 mm thick, slot about 6.5–7 mm).
 - Motor body length (default 40 mm).
