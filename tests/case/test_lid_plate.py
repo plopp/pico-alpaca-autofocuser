@@ -81,3 +81,14 @@ def test_key_dimensions(parts):
     gap = p.SCREW_HOLE_D / 2
     assert not parts['key'].is_inside((p.NUT_X, p.NUT_Y + gap - 0.1, p.BOTTOM_Z))
     assert math.isclose(key(6.5).bounding_box().size.X, 6.5, abs_tol=0.01)
+
+
+def test_board_stop_fins_are_stiff_and_held_in_the_floor(parts):
+    """Thick fins whose tips sit in sockets in the floor: a plug push can't bend them away."""
+    assert p.BOARD_STOP_X[1] - p.BOARD_STOP_X[0] >= 5.0
+    x_mid = sum(p.BOARD_STOP_X) / 2
+    for y0, y1 in p.BOARD_STOP_YS:
+        y = (y0 + y1) / 2
+        assert parts['lid'].is_inside((x_mid, y, p.FLOOR_Z - 1.0)), y
+        assert parts['body'].is_inside((p.BOARD_STOP_X[0] - 0.6, y, p.FLOOR_Z - 1.0)), y
+        assert parts['body'].is_inside((p.BOARD_STOP_X[1] + 0.6, y, p.FLOOR_Z - 1.0)), y

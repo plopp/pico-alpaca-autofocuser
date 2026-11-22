@@ -146,3 +146,7 @@ print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
 - **The key is two bars**, one either side of the screw: a 6 mm key is narrower than the 1/4" screw.
 - **The board frame is mirror-imaged** (KiCad's y points down the screen). The script builds in
   it and flips y for the STL/STEP files.
+- **After the final review:** the nut pocket is 6.0 mm deep (a thick nut can't stand proud;
+  pause at 7.6 mm). The board-stop fins on the lid are 5 mm thick, with their tips in sockets
+  in the floor. The slot ceilings slope 45° so they print cleanly. The J1 cutout reaches
+  0.5 mm below the board, for a board resting low in its slot. The front inserts are 2 mm apart.

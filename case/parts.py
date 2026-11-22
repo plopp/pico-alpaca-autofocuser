@@ -100,7 +100,7 @@ def _bottom_cuts(key_w: float) -> list[Part]:
     return [
         box(p.NUT_X - groove_w / 2, p.OUTER_Y[0] - 1, p.BOTTOM_Z - 1,
             p.NUT_X + groove_w / 2, p.OUTER_Y[1] + 1, p.BOTTOM_Z + p.GROOVE_D),
-        extrude(hexagon, amount=p.NUT_T),
+        extrude(hexagon, amount=p.NUT_POCKET),
         rod_z(p.NUT_X, p.NUT_Y, p.SCREW_HOLE_D, p.BOTTOM_Z - 1, p.NUT_BOTTOM_Z + 0.1),
     ]
 
@@ -113,6 +113,18 @@ def _insert_holes() -> list[Part]:
     return holes
 
 
+def _slots() -> list[Part]:
+    """Board slots. The ceiling is flat for 0.5 mm, then rises at 45° to the inner wall face,
+    so the wall above prints without a 2 mm flat overhang."""
+    y0, flat = p.SLOT_Y[0], p.SLOT_Y[0] + 0.5
+    z0, z1 = p.SLOT_Z
+    rise = p.INNER_Y[0] + 0.5 - flat
+    profile = Polygon((y0, z0), (y0, z1), (flat, z1), (flat + rise, z1 + rise),
+                      (flat + rise, z0))
+    low = extrude(Plane.YZ.offset(0) * profile, dir=(1, 0, 0), amount=p.MOTOR_FACE_X + 1)
+    return [low, low.mirror(MID_PLANE)]
+
+
 def body(key_w: float = p.KEY_W) -> Part:
     shell = box(-p.REAR_WALL, p.OUTER_Y[0], p.BOTTOM_Z,
                 p.MOTOR_FACE_X, p.OUTER_Y[1], p.LID_UNDER_Z)
@@ -120,8 +132,11 @@ def body(key_w: float = p.KEY_W) -> Part:
         shell += _corner_bosses(x0, x1, p.LID_UNDER_Z)
     cuts = [
         box(0, p.INNER_Y[0], p.FLOOR_Z, p.MOTOR_FACE_X + 1, p.INNER_Y[1], p.LID_UNDER_Z + 1),
-        box(0, p.SLOT_Y[0], p.SLOT_Z[0], p.MOTOR_FACE_X + 1, p.SLOT_Y[1], p.SLOT_Z[1]),
     ]
+    cuts += _slots()
+    cuts += [box(p.BOARD_STOP_X[0] - p.CLEAR, y0 - p.CLEAR, p.FLOOR_Z - p.STOP_SOCKET_D,
+                 p.BOARD_STOP_X[1] + p.CLEAR, y1 + p.CLEAR, p.FLOOR_Z + 1)
+             for y0, y1 in p.BOARD_STOP_YS]
     cuts += _rear_holes() + _bottom_cuts(key_w) + _insert_holes()
     return shell - cuts
 

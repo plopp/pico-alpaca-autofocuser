@@ -5,6 +5,7 @@ import pytest
 
 pytest.importorskip('build123d')
 
+from case import params as p
 from case.build import PRINTED, build
 
 
@@ -45,4 +46,4 @@ def test_print_orientations(written):
     out, _ = written
     assert stl_z_range(out / 'front_plate.stl')[1] == pytest.approx(5.0, abs=0.01)   # flat
     assert stl_z_range(out / 'key.stl')[1] == pytest.approx(3.0, abs=0.01)
-    assert stl_z_range(out / 'lid.stl')[1] == pytest.approx(2.5 + 51.7 + 1.2, abs=0.01)
+    assert stl_z_range(out / 'lid.stl')[1] == pytest.approx(p.LID_TOP_Z - p.BOARD_STOP_Z, abs=0.01)

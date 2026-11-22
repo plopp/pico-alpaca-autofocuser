@@ -34,8 +34,8 @@ def test_motor_fits_between_walls():
 
 
 def test_nut_pause_height():
-    assert p.PAUSE_HEIGHT == 7.2
-    assert abs(p.NUT_TOP_Z - (p.BOTTOM_Z + 7.2)) < 1e-9
+    assert p.PAUSE_HEIGHT == 7.6
+    assert abs(p.NUT_TOP_Z - (p.BOTTOM_Z + 7.6)) < 1e-9
     assert p.NUT_TOP_Z < p.FLOOR_Z - 0.7          # printed cover over the nut
 
 

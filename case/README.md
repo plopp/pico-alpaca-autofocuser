@@ -16,9 +16,9 @@ The files are generated. Run `.venv/bin/python -m case.build` (once:
 
 | Printed (`case/out/`) | |
 |---|---|
-| `body.stl` | Floor, side walls with the board slots, rear wall. **Print pause at 7.2 mm** (nut). |
+| `body.stl` | Floor, side walls with the board slots, rear wall. **Print pause at 7.6 mm** (nut). |
 | `front_plate.stl` | Carries the motor. |
-| `lid.stl` | Vents and a screwdriver hole over the driver's potentiometer; two fins hold the board in place. |
+| `lid.stl` | Vents and a screwdriver hole over the driver's potentiometer; two fins hold the board in place (their tips sit in sockets in the floor). |
 | `key.stl` | Two short bars, glued into the groove under the case; they run in the plate's slot. |
 
 | Hardware | |
@@ -34,10 +34,11 @@ The files are generated. Run `.venv/bin/python -m case.build` (once:
 
 PETG or ASA (cold nights, sun during the day), 0.2 mm layers, 4 walls, 30 % infill. No
 supports needed. The STLs are already in print orientation:
-- **Body**, floor down. **Add a pause at 7.2 mm** (in OrcaSlicer: right-click the layer
-  slider at the first layer above 7.2 mm → *Add pause*). At the pause, drop the nut into
-  the hex pocket. It should sit flush or just below the top of the pocket. Then resume,
-  and the printer covers it.
+- **Body**, floor down. **Add a pause at 7.6 mm** (in OrcaSlicer: right-click the layer
+  slider at the first layer that starts at or above 7.6 mm → *Add pause*). At the pause,
+  drop the nut into the hex pocket. The pocket is 6.0 mm deep, so the nut (5.6 mm) sits
+  a little below its top. If it stands proud, don't resume: the nozzle would hit it.
+  Resume, and the printer bridges over it.
 - **Lid**, top down: the two fins stand upright.
 - **Front plate**, outer face down.
 - **Key**: two bars, flat.
@@ -59,9 +60,9 @@ the lid. The microstep jumpers need the lid off.
 
 ## On the rig
 
-The 1/4"-20 screw needs to stick up **4.5 to 7.5 mm** above the surface the case sits on.
-Less than that and it barely grips the nut. More than that and it pushes on the plastic
-above the nut. Slide the unit along the plate's slot to tension the belt, then tighten the
+The 1/4"-20 screw needs to stick up **5.5 to 7 mm** above the surface the case sits on.
+Less than that and it grips fewer than 3 threads of the nut. More than 7.6 mm and it pushes
+on the plastic above the nut: put a washer or spacer under the case. Slide the unit along the plate's slot to tension the belt, then tighten the
 screw. The ridge in the slot stops the unit turning.
 
 ## Changing it

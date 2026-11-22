@@ -26,11 +26,12 @@ FLOOR_Z = -5.4
 GROOVE_D = 1.0              # key groove in the bottom face
 NUT_AF, NUT_T = 11.1, 5.6   # 1/4"-20 hex nut: 7/16" across flats, 7/32" thick
 NUT_FLOOR = 0.6             # between groove and nut
+NUT_POCKET = 6.0            # deeper than the nut (ASME max 5.74) so it never stands proud
 NUT_COVER = 0.8             # printed over the nut
-BOTTOM_Z = FLOOR_Z - NUT_COVER - NUT_T - NUT_FLOOR - GROOVE_D   # -13.4
-NUT_BOTTOM_Z = BOTTOM_Z + GROOVE_D + NUT_FLOOR                  # -11.8
-NUT_TOP_Z = NUT_BOTTOM_Z + NUT_T                                # -6.2
-PAUSE_HEIGHT = round(NUT_TOP_Z - BOTTOM_Z, 2)                   # 7.2 mm above the bed
+BOTTOM_Z = FLOOR_Z - NUT_COVER - NUT_POCKET - NUT_FLOOR - GROOVE_D   # -13.8
+NUT_BOTTOM_Z = BOTTOM_Z + GROOVE_D + NUT_FLOOR                  # -12.2
+NUT_TOP_Z = NUT_BOTTOM_Z + NUT_POCKET                           # -6.2 (pocket top)
+PAUSE_HEIGHT = round(NUT_TOP_Z - BOTTOM_Z, 2)                   # 7.6 mm above the bed
 NUT_X, NUT_Y = 100.0, 25.0  # under the motor, near the centre of mass
 SCREW_HOLE_D = 6.8          # 1/4" camera screw clearance
 
@@ -66,8 +67,8 @@ BOSS_OUT = 2.3              # corner bosses bulge this far outside the side wall
 BOSS_Y = (OUTER_Y[0] + 1.1, OUTER_Y[1] - 1.1)   # insert centre lines, -1.6 and 51.6
 BOSS_BOTTOM_Z = 40.0
 LID_SCREWS = [(3.0, BOSS_Y[0]), (3.0, BOSS_Y[1]),          # (x, y), vertical
-              (126.0, BOSS_Y[0]), (126.0, BOSS_Y[1])]
-PLATE_SCREWS = [(BOSS_Y[0], 45.2), (BOSS_Y[1], 45.2),      # (y, z), along x
+              (125.0, BOSS_Y[0]), (125.0, BOSS_Y[1])]
+PLATE_SCREWS = [(BOSS_Y[0], 44.0), (BOSS_Y[1], 44.0),      # (y, z), along x
                 (4.0, -9.4), (46.0, -9.4)]
 BOSS_X = [(-REAR_WALL, 8.0), (120.0, MOTOR_FACE_X)]         # rear and front boss lengths
 
@@ -78,7 +79,7 @@ USB_RECESS = (13.0, 9.0, 1.0)       # outside, for a long plug grip
 J1_Y = 29.2                         # PCB: DC-005 pin 1
 J1_BODY = (9.0, 10.9)               # width, height
 J1_CUT_Y = (J1_Y - J1_BODY[0] / 2 - CLEAR, J1_Y + J1_BODY[0] / 2 + CLEAR)   # 24.4..34.0
-J1_CUT_Z = (0.0, J1_BODY[1] + CLEAR)                                        # 0..11.2
+J1_CUT_Z = (-SLOT_GAP / 2 - CLEAR, J1_BODY[1] + CLEAR)    # -0.5..11.2: board may sit low in the slot
 J3_Y, J3_Z = 40.5, 2.5              # PCB: PJ-320D nose, Ø5, sitting on the board
 J3_HOLE_D = 5.8
 
@@ -86,6 +87,7 @@ J3_HOLE_D = 5.8
 POT_X, POT_Y, POT_D = 69.0, 19.0, 8.0          # BTT TMC2209 pot at its VM end
 VENT_XS = [64.0 + i * 3.5 for i in range(5)]   # slot centres x 64..78
 VENT_W, VENT_Y = 2.0, (3.0, 14.0)
-BOARD_STOP_X = (BOARD_L + CLEAR, BOARD_L + CLEAR + 2.0)    # 80.3..82.3
+BOARD_STOP_X = (BOARD_L + CLEAR, BOARD_L + CLEAR + 5.0)    # 80.3..85.3: stiff, clear of a 48 mm motor
 BOARD_STOP_YS = [(5.0, 20.0), (36.0, 45.0)]                # clear of J2 (y 24.6..31.4)
-BOARD_STOP_Z = -1.2
+STOP_SOCKET_D = 2.0         # fin tips sit in sockets in the floor
+BOARD_STOP_Z = FLOOR_Z - STOP_SOCKET_D + CLEAR

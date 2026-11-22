@@ -119,3 +119,43 @@ def test_corner_bosses_where_the_inserts_are(part):
         assert not part.is_inside((60.0, y, z))
         assert not part.is_inside((p.BOSS_X[1][0] - 1, y, z))
     assert part.bounding_box().min.X > -p.REAR_WALL - 0.01
+
+
+@pytest.mark.parametrize('dz', [-p.SLOT_GAP / 2, p.SLOT_GAP / 2])
+def test_board_slides_in_at_either_end_of_the_slot_play(part, dz):
+    """Gravity holds the board on the slot floor during assembly: the jacks still clear."""
+    env = Pos(0, 0, dz) * board_envelope()
+    for d in (0, 0.5, 30, 60):
+        assert overlap(part, Pos(d, 0, 0) * env) < EPS, d
+
+
+def test_slot_ceiling_prints_without_support(part):
+    """Above the slot the wall slopes 45° instead of a 2 mm flat overhang."""
+    assert not part.is_inside((40.0, 1.5, 1.0))
+    assert part.is_inside((40.0, -0.1, 0.4))
+    raised = box(0, 0, -p.BOARD_T + 0.25, p.BOARD_L, p.BOARD_W, 0.25)
+    assert overlap(part, raised) > 0.1                  # board edge still held from above
+
+
+def test_nut_pocket_takes_a_thick_nut():
+    """ASME 1/4"-20 hex nut is up to 5.74 mm; slicer layers may land 0.15 mm off the pause."""
+    assert p.PAUSE_HEIGHT >= p.GROOVE_D + p.NUT_FLOOR + 5.74 + 0.15
+    assert p.FLOOR_Z - p.NUT_TOP_Z >= 0.8 - 1e-9
+
+
+def test_thick_nut_fits_pocket(part):
+    thick = Plane.XY.offset(p.NUT_BOTTOM_Z) * Pos(p.NUT_X, p.NUT_Y) \
+        * RegularPolygon(p.NUT_AF / 2, 6, major_radius=False)
+    assert overlap(part, extrude(thick, amount=5.74)) < EPS
+
+
+def test_insert_holes_keep_apart():
+    """Pressing one heat-set insert must not break into the next hole."""
+    r = p.INSERT_D / 2
+    for x, y in p.LID_SCREWS:
+        for py, pz in p.PLATE_SCREWS:
+            if abs(py - y) > 1:
+                continue
+            dx = (p.MOTOR_FACE_X - p.INSERT_DEPTH) - (x + r)     # lid hole to plate hole, in x
+            dz = (p.LID_UNDER_Z - p.INSERT_DEPTH) - (pz + r)     # and in z
+            assert max(dx, dz) >= 1.5 or (dx >= 1.0 and dz >= 0.5), (x, y, pz)
