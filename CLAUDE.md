@@ -34,6 +34,13 @@ The carrier board is generated, not drawn: `hardware/design.py` (all parts + net
 - Layout rules live in `gen_board.py` (`PLACEMENT`, `SILK`, `SLOT_KEEPOUT`); the J1 footprint is custom (`hardware/kicad/Focuser.pretty`, from the XUNPU DC-005 drawing).
 - After a hand edit in KiCad, port it back into the scripts or the next build overwrites it.
 
+## Case (`case/`)
+
+The printed case (motor + board, one unit on the lens bracket) is generated with build123d, which lives in `.venv` only:
+- `.venv/bin/pip install build123d==0.13.0 matplotlib pytest`, then `.venv/bin/python -m case.build [--key-width 6.5]` → `case/out/` (STLs in print orientation, `case.step`, previews).
+- `.venv/bin/python -m pytest tests/case -q` checks the fit; under system Python only the parameter tests run.
+- `case/params.py` holds every dimension in the **board frame** (KiCad x/y, z up from the board's top), which is mirror-imaged; `parts.to_world()` flips y for export, so never export a board-frame part directly.
+
 ## Architecture
 
 - `pico/main.py` runs at power-up: loads settings, joins Wi-Fi (blinks the LED, retries every 10 s, watchdog reconnects), builds the `Stepper` with real `machine.Pin`/`machine.Timer`, then `asyncio.run`s the Microdot server and the discovery responder together.

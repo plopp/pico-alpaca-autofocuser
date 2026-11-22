@@ -3,6 +3,8 @@ import math
 
 import pytest
 
+pytest.importorskip('build123d')
+
 from case import params as p
 from case.parts import body, board_envelope, box, front_plate, key, lid, motor_envelope
 

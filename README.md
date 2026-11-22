@@ -9,7 +9,8 @@ hardware is pending a separate motor supply (see Wiring).
 
 There's a carrier PCB in [`hardware/`](hardware/README.md): 80 × 50 mm, assembled by JLCPCB,
 with sockets for the Pico 2 W and the TMC2209, a 12 V barrel jack, a motor connector and a
-3.5 mm jack for a DS18B20 temperature sensor. The table below is for breadboard builds.
+3.5 mm jack for a DS18B20 temperature sensor. A printable case for the board and the motor is
+in [`case/`](case/README.md). The table below is for breadboard builds.
 
 ## Wiring (breadboard)
 

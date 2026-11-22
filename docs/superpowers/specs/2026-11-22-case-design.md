@@ -134,3 +134,15 @@ print clearance (default 0.3 mm), M3 insert size, 1/4"-20 nut size.
   above the motor, and the embedded nut needs about 8 mm of floor under the motor.
 - **The ridge is a separate printed key glued into a 1 mm groove** (2 mm ridge left): with the
   ridge printed on, the body's floor could not lie flat on the print bed.
+
+## Changes made while building (2026-11-22)
+
+- **No plinth: one thick floor (top 3.8 mm under the board), height about 68 mm.** The board
+  slides in from the front over the motor's area, so nothing there may rise into the sweep of
+  its through-hole pins. The nut's 8 mm of floor now runs under the whole case.
+- **Insert bosses bulge 2.3 mm outside the side walls at the four top corners** (45° underneath).
+  A 4.5 mm wall can't hold a Ø4 insert, and the motor fills the inside. The plate's two lower
+  screws go into the thick floor.
+- **The key is two bars**, one either side of the screw: a 6 mm key is narrower than the 1/4" screw.
+- **The board frame is mirror-imaged** (KiCad's y points down the screen). The script builds in
+  it and flips y for the STL/STEP files.

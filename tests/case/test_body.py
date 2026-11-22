@@ -2,6 +2,8 @@
 import math
 
 import pytest
+
+pytest.importorskip('build123d')
 from build123d import Box, Plane, Pos, RegularPolygon, Rot, extrude
 
 from case import params as p
