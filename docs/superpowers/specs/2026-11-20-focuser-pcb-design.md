@@ -62,7 +62,7 @@ DS18B20 data **GP22** (pin 29), **3V3 OUT** (pin 36), **VSYS** (pin 39), all GND
 
 ## Layout (80 × 50 mm, origin top-left, x along 80 mm)
 
-- **Left short edge (x = 0, the rear):** Pico USB connector (Pico's USB end flush with the edge, footprint rotated so the board runs along x), then J1 barrel jack and J3 3.5 mm jack below it, both opening outward (user change: the temperature jack comes out of the rear with USB and power).
+- **Left short edge (x = 0, the rear):** Pico USB connector (Pico's USB end flush with the edge, footprint rotated so the board runs along x), then J1 barrel jack and J3 3.5 mm jack below it, both opening outward (user change: the temperature jack comes out of the rear with USB and power). Both jacks reach 2 mm past the edge (user change), flush with the outside of a 2 mm rear wall: J1's body front, and J3's nose (its body front sits on the edge).
 - Pico occupies roughly x 0–52, along one long edge; U1 regulator and power parts near J1.
 - TMC2209 socket to the right of the Pico; C1 within ~10 mm of VM.
 - **Right short edge (x = 80):** J2 motor connector, cable leaving away from power/USB.

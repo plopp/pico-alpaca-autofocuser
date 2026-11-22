@@ -42,9 +42,11 @@ PLACEMENT = {
     'J4': (PICO_X, PICO_BOTTOM_ROW_Y, 90),
     'J7': (TMC_POWER_X, TMC_PIN1_Y, 180),   # VM..GND, pin 1 (VM) at the bottom
     'J6': (TMC_LOGIC_X, TMC_PIN1_Y, 180),   # EN..DIR, pin 1 (EN) at the bottom
-    # Rear (left) edge, top to bottom: Pico USB, 12 V jack, DS18B20 jack
-    'J1': (14.2, 29.2, 0),             # DC-005, opening faces -x
-    'J3': (8.9, 40.5, 0),              # PJ-320D 3.5 mm jack, opening faces -x
+    # Rear (left) edge, top to bottom: Pico USB, 12 V jack, DS18B20 jack. Both jacks reach
+    # into a 2 mm rear wall, their fronts flush with its outside face (x = -2)
+    'J1': (11.8, 29.2, 0),             # DC-005, opening faces -x; body front at x = -2
+    'J3': (6.35, 40.5, 0),             # PJ-320D, opening faces -x; body front at the edge,
+                                       # the 2 mm nose sticks out to x = -2
     'J2': (69.0, 27.5, 0),             # motor, right edge below the driver, cable up
     'F1': (23.5, 31.0, 0),
     'D1': (30.5, 31.0, 0),

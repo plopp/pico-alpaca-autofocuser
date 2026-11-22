@@ -25,6 +25,9 @@ Everything to upload is in `fab/`:
 
    Fix rotations in the preview if needed.
 6. Solder jumpers JP1/JP2 are pads only; nothing is placed on them.
+7. **J1 and J3 stick out 2 mm past the rear (left, short) edge** on purpose. If JLCPCB adds
+   assembly edge rails, they must go on the long edges, not the rear edge. Say so in the
+   order remarks: "J1 and J3 overhang the left short edge by 2 mm; no edge rail on that side."
 
 ## Using the board
 
@@ -62,6 +65,8 @@ control page, or in `config.toml`).
 
 **Mounting:** no screw holes. The board slides into slots in the case, and the 2.5 mm strips along both
 long edges are kept free of parts.
+The rear wall is meant to be 2 mm thick: J1's body (2 mm past the edge) and J3's nose (2 mm,
+5 mm diameter) reach through it and end flush with its outside face.
 
 ## Pins used on the Pico
 

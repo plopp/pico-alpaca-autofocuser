@@ -11,13 +11,31 @@ def test_outline_80x50(board):
     assert abs((y1 - y0) - 50.0) < 0.01
 
 
+# Parts allowed past the rear (left) edge, in mm: both jacks reach into a 2 mm case wall
+OVERHANG = {'J1': 2.4, 'J3': 2.55}     # courtyard incl. line width
+
+
 def test_all_parts_placed_on_board(board):
     x0, y0, x1, y1 = board['outline']
     for ref in design.PARTS:
         assert ref in board['footprints'], ref
         cx0, cy0, cx1, cy1 = fp(board, ref)['courtyard']
-        assert cx0 >= x0 - 0.01 and cy0 >= y0 - 0.01, ref
+        assert cx0 >= x0 - OVERHANG.get(ref, 0) - 0.01 and cy0 >= y0 - 0.01, ref
         assert cx1 <= x1 + 0.01 and cy1 <= y1 + 0.01, ref
+
+
+def test_temperature_jack_nose_sticks_out_of_rear_edge(board):
+    """PJ-320D: 12.1 mm body, then a 2 mm x 5 mm nose (courtyard 0.5 mm past it). The body's
+    front face sits on the edge, so the nose reaches into the hole in the case wall."""
+    x0 = board['outline'][0]
+    assert abs(fp(board, 'J3')['courtyard'][0] - (x0 - 2.5)) < 0.05
+
+
+def test_barrel_jack_front_flush_with_outside_of_case_wall(board):
+    """DC-005 body front (courtyard 0.35 mm past it) sits 2 mm past the edge: flush with the
+    outside of a 2 mm rear wall, so the plug gets the jack's full depth."""
+    x0 = board['outline'][0]
+    assert abs(fp(board, 'J1')['courtyard'][0] - (x0 - 2.39)) < 0.03     # bbox incl. 0.05 line
 
 
 def test_no_courtyard_overlaps(board):
