@@ -107,3 +107,13 @@ def test_world_frame_is_not_mirrored(part):
     assert not world.is_inside((-1.0, -p.USB_Y, p.USB_Z))
     assert not world.is_inside((-1.0, -p.J3_Y, p.J3_Z))
     assert world.is_inside((-1.0, -p.J3_Y, p.USB_Z))
+
+
+def test_corner_bosses_where_the_inserts_are(part):
+    z = p.LID_UNDER_Z - 1
+    for y in (p.OUTER_Y[0] - 1, p.OUTER_Y[1] + 1):
+        for x0, x1 in p.BOSS_X:
+            assert part.is_inside(((x0 + x1) / 2, y, z)), (x0, y)
+        assert not part.is_inside((60.0, y, z))
+        assert not part.is_inside((p.BOSS_X[1][0] - 1, y, z))
+    assert part.bounding_box().min.X > -p.REAR_WALL - 0.01

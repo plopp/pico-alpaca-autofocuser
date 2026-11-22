@@ -67,13 +67,16 @@ def motor_envelope(length: float = p.MOTOR_MAX_L) -> Part:
     return Part() + parts
 
 
-def _corner_boss(x0, x1, outside_low: bool) -> Part:
-    """Bulge outside a side wall at the top, 45° underneath so it prints without support."""
-    y_wall, y_out = (p.OUTER_Y[0], p.OUTER_Y[0] - p.BOSS_OUT) if outside_low \
-        else (p.OUTER_Y[1], p.OUTER_Y[1] + p.BOSS_OUT)
-    profile = Polygon((y_wall, p.BOSS_BOTTOM_Z - p.BOSS_OUT), (y_wall, p.LID_UNDER_Z),
-                      (y_out, p.LID_UNDER_Z), (y_out, p.BOSS_BOTTOM_Z))
-    return extrude(Plane.YZ.offset(x0) * profile, amount=x1 - x0)
+MID_PLANE = Plane((0, p.BOARD_W / 2, 0), z_dir=(0, 1, 0))
+
+
+def _corner_bosses(x0, x1, z_top) -> list[Part]:
+    """Bulges outside both side walls at the top, 45° underneath so they print unsupported."""
+    y_wall, y_out = p.OUTER_Y[0], p.OUTER_Y[0] - p.BOSS_OUT
+    profile = Polygon((y_wall, p.BOSS_BOTTOM_Z - p.BOSS_OUT), (y_wall, z_top),
+                      (y_out, z_top), (y_out, p.BOSS_BOTTOM_Z))
+    low = extrude(Plane.YZ.offset(x0) * profile, dir=(1, 0, 0), amount=x1 - x0)
+    return [low, low.mirror(MID_PLANE)]
 
 
 def _rear_holes() -> list[Part]:
@@ -113,10 +116,47 @@ def _insert_holes() -> list[Part]:
 def body(key_w: float = p.KEY_W) -> Part:
     shell = box(-p.REAR_WALL, p.OUTER_Y[0], p.BOTTOM_Z,
                 p.MOTOR_FACE_X, p.OUTER_Y[1], p.LID_UNDER_Z)
-    shell += [_corner_boss(x0, x1, low) for x0, x1 in p.BOSS_X for low in (True, False)]
+    for x0, x1 in p.BOSS_X:
+        shell += _corner_bosses(x0, x1, p.LID_UNDER_Z)
     cuts = [
         box(0, p.INNER_Y[0], p.FLOOR_Z, p.MOTOR_FACE_X + 1, p.INNER_Y[1], p.LID_UNDER_Z + 1),
         box(0, p.SLOT_Y[0], p.SLOT_Z[0], p.MOTOR_FACE_X + 1, p.SLOT_Y[1], p.SLOT_Z[1]),
     ]
     cuts += _rear_holes() + _bottom_cuts(key_w) + _insert_holes()
     return shell - cuts
+
+
+def front_plate() -> Part:
+    x0, x1 = p.MOTOR_FACE_X, p.PLATE_X1
+    plate = box(x0, p.OUTER_Y[0], p.BOTTOM_Z, x1, p.OUTER_Y[1], p.LID_TOP_Z)
+    plate += _corner_bosses(x0, x1, p.LID_TOP_Z)
+    half = p.MOTOR_HOLE_PITCH / 2
+    holes = [rod_x(p.MOTOR_Y + dy, p.SHAFT_Z + dz, p.SCREW_D, x0 - 1, x1 + 1)
+             for dy in (-half, half) for dz in (-half, half)]
+    holes.append(rod_x(p.MOTOR_Y, p.SHAFT_Z, p.MOTOR_BOSS_D + 1.0, x0 - 1, x1 + 1))
+    holes += [rod_x(y, z, p.SCREW_D, x0 - 1, x1 + 1) for y, z in p.PLATE_SCREWS]
+    return plate - holes
+
+
+def lid() -> Part:
+    z0, z1 = p.LID_UNDER_Z, p.LID_TOP_Z
+    top = box(-p.REAR_WALL, p.OUTER_Y[0], z0, p.MOTOR_FACE_X, p.OUTER_Y[1], z1)
+    top += [box(x0, y0, z0, x1, y1, z1) for x0, x1 in p.BOSS_X
+            for y0, y1 in [(p.OUTER_Y[0] - p.BOSS_OUT, p.OUTER_Y[0]),
+                           (p.OUTER_Y[1], p.OUTER_Y[1] + p.BOSS_OUT)]]
+    top += [box(p.BOARD_STOP_X[0], y0, p.BOARD_STOP_Z, p.BOARD_STOP_X[1], y1, z0 + 0.01)
+            for y0, y1 in p.BOARD_STOP_YS]
+    holes = [rod_z(x, y, p.SCREW_D, z0 - 1, z1 + 1) for x, y in p.LID_SCREWS]
+    holes.append(rod_z(p.POT_X, p.POT_Y, p.POT_D, z0 - 1, z1 + 1))
+    holes += [box(x - p.VENT_W / 2, p.VENT_Y[0], z0 - 1, x + p.VENT_W / 2, p.VENT_Y[1], z1 + 1)
+              for x in p.VENT_XS]
+    return top - holes
+
+
+def key(key_w: float = p.KEY_W) -> Part:
+    """Two bars, either side of the camera screw (the key is narrower than the screw)."""
+    x0, x1 = p.NUT_X - key_w / 2, p.NUT_X + key_w / 2
+    z0, z1 = p.BOTTOM_Z + p.GROOVE_D - p.KEY_H, p.BOTTOM_Z + p.GROOVE_D
+    gap = p.SCREW_HOLE_D / 2
+    return Part() + [box(x0, p.OUTER_Y[0], z0, x1, p.NUT_Y - gap, z1),
+                     box(x0, p.NUT_Y + gap, z0, x1, p.OUTER_Y[1], z1)]
